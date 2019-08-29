@@ -1,5 +1,6 @@
 ## Move the config to a separate directory
-import helperClasses14 as helperClasses, helpers14 as helpers
+import helperClasses
+import helpers
 import os
 
 def getConfig():

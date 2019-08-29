@@ -1,5 +1,6 @@
-## Change the updateColour functions
-import re, helperClasses15 as helpers
+## Improve colour updating
+import re
+import helperClasses as helpers
 
 def addZeroes(num):
   string = str(num)
@@ -119,10 +120,12 @@ def getCardTypeFromRow(colours, row):
         return key
   
 
-def getPartition(cardLines, config):
+def getPartition(cardLines, config, exclude=False):
   count = 0
   partition = [[]]
-  for card in cardLines.keys():
+  for card in sorted(cardLines.keys()):
+    if not cardLines[card].status.complete and exclude:
+      continue
     if card > config[count][1]:
       partition.append([])
       count = count + 1
@@ -207,6 +210,8 @@ def readLines(fileName):
     lines = file.readlines()
     for i in range(len(lines)):
       lines[i] = lines[i][:-1]
+      if lines[i] and lines[i][-1] == '\r':
+        lines[i] = lines[i][:-1]
   return lines
 
 def replaceColour3(line,colour1,colour2):
@@ -262,13 +267,14 @@ def sortKey(row):
   return int(getCardNum(row[0][2]))
 
 def updateColourByConfig(config, updateConfig, cardInfo):
-  status = cardInfo.status.status
-  complete = cardInfo.status.complete
-  updateColour(config[complete][status],updateConfig[complete][status],cardInfo)
+  for key in config[0].keys():
+    for i in range(len(config)):
+      updateColour(config[i][key], updateConfig[i][key], cardInfo)
 
 def updateColour(colour1, colour2, cardInfo):
   cardInfo.line = replaceColour3(cardInfo.line,colour1,colour2)
-  cardInfo.row[0][2] = replaceColour3(cardInfo.row[0][2],colour1,colour2)
+  for i in range(len(cardInfo.row[0])):
+    cardInfo.row[0][i] = replaceColour3(cardInfo.row[0][i],colour1,colour2)
 
 def writeToFile(fileName, lines, testFlag=""):
   if testFlag == "test":

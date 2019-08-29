@@ -1,4 +1,4 @@
-## Add the ability to unblock a blocked card
+## Add the ability to change the colour scheme using an update config
 
 def addNotes(args):
   lines = helpers.readLines("bugs.md")
@@ -154,7 +154,7 @@ def updateConfig(args):
   if not config.partition and not config.colour:
     return
 
-  files = os.listdir("archive")
+  files = sorted(os.listdir("archive"))
   template = helpers.readLines("cardTemplate.md")
   archiveLines = helpers.readLines("archive.md")
   cardInfos = helpers.getCardInfos(archiveLines)
@@ -164,36 +164,51 @@ def updateConfig(args):
     rows = helpers.getRows(lines, template)
     rowGroups = helpers.getRowGroups(rows, lines, fileFlag="archive")
     archiveFileRowGroups.append(rowGroups)
-    for j in range(2):
-      for i in range(len(rowGroups[j])):
-        cardNum = helpers.sortKey(rowGroups[j][i])
-        cardInfos[cardNum].row = rowGroups[j][i] 
-        cardInfos[cardNum].rowNum = i
-        cardInfos[cardNum].rowGroup = j
+    for i in range(2):
+      for j in range(len(rowGroups[i])):
+        cardNum = helpers.sortKey(rowGroups[i][j])
+        cardInfos[cardNum].row = rowGroups[i][j] 
+        cardInfos[cardNum].rowNum = j
+        cardInfos[cardNum].rowGroup = i
 
   if config.colour:
     oldConfig = load.getConfig()
     progressLines = helpers.readLines("bugs.md")
     rows = helpers.getRows(progressLines, template)
+    rowGroups = helpers.getRowGroups(rows, progressLines)
     progressCards = []
-    for i in range(len(rows)):
-      cardNum = helpers.sortKey(rows[i])
-      cardInfos[cardNum].row = rows[i] 
-      cardInfos[cardNum].rowNum = i
-      progressCards.append(cardNum)
+    for i in range(len(rowGroups)):
+      for j in range(len(rowGroups[i])):
+        cardNum = helpers.sortKey(rowGroups[i][j])
+        cardInfos[cardNum].row = rowGroups[i][j] 
+        cardInfos[cardNum].rowNum = j
+        cardInfos[cardNum].rowGroup = i
+        progressCards.append(cardNum)
 
     for card in cardInfos.keys():
       cardInfos[card].setStatus(oldConfig.colour, progressCards)
+
+    helpers.getPartition(cardInfos, oldConfig.partition, exclude=True)
+
+    newArchiveRowGroups = [[[],[]] for f in files]
+
+    for card in cardInfos.keys():
+##    print(card,cardInfos[card].partition)
       helpers.updateColourByConfig(oldConfig.colour, config.colour, cardInfos[card])
       if cardInfos[card].partition >= 0:
-        archiveFileRowGroups[cardInfos[card].partition][cardInfos[card].rowGroup][cardInfos[card].rowNum] = cardInfos[card].row
+        newArchiveRowGroups[cardInfos[card].partition][cardInfos[card].rowGroup].append(cardInfos[card].row)
+      else:
+        rowGroups[cardInfos[card].rowGroup][cardInfos[card].rowNum] = cardInfos[card].row
 
     helpers.getPartition(cardInfos, oldConfig.partition)
     archiveOut = helpers.constructArchiveFromInfos(archiveLines, cardInfos, oldConfig.partition)
     helpers.writeToFile("archive.md",archiveOut,args[0])
     for i in range(len(files)):
-      lines = helpers.constructFile(archiveFileRowGroups[i], fileFlag="archive")
+      lines = helpers.constructFile(newArchiveRowGroups[i], fileFlag="archive")
       helpers.writeToFile("archive/"+files[i], lines, args[0])
+
+    lines = helpers.constructFile(rowGroups)
+    helpers.writeToFile("bugs.md", lines, args[0])
 
   if config.partition:
     partition = helpers.getPartition(cardInfos, config.partition)
@@ -256,10 +271,14 @@ def unblockCard(args):
   helpers.writeToFile("archive.md", archiveLines, args[0])
 
 def test(args):
-  print(helpers.getCardNum("<span style=\"color:#85a900\">K277</span>"))
+  config = load.getUpdateConfig()
+  print(config)
 
 if __name__ == "__main__":
-  import sys, helpers16 as helpers, configHelpers16 as load, helperClasses16 as helperClasses
+  import sys
+  import helpers
+  import configHelpers as load
+  import helperClasses
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
     helpers.printHelp()
