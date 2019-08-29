@@ -1,6 +1,4 @@
-## Add the colourWrap and getArchiveFile functions, and change the search,
-## constructFile, and getRowGroups functions to allow for automatic
-## archiving. Also alphabetize the functions and delete a couple unused ones
+## Add a searchInRow function in place of getTemplateLine
 
 def colourWrap(string, colour):
   return "  <span style=\"color:" + colour + "\">" + string.strip() + "</span>"
@@ -10,7 +8,8 @@ def constructFile(rowGroups, fileFlag="bugs"):
   lines = ["<title>Bug Checklists</title>","","[Back to Archive](./archive.md)"]
   titles = getTitles(fileFlag)
   for i in range(len(titles)):
-    lines.extend(constructTable(rowGroups[i],titles[i]))
+    if rowGroups[i] != []:
+      lines.extend(constructTable(rowGroups[i],titles[i]))
   return lines
 
 ## Constructs a single table from the rows in it
@@ -79,9 +78,6 @@ def getRows(lines, template):
     start = result[2]
   return rows[:-1]
 
-def getTemplateLine(row):
-  return searchLines("cards/template.md",row[0]) + row[1]
-
 def getTitles(fileFlag):
   bugTitles = ["In Progress", "Code Reviews", "In QA", "Blocked"]
   archiveTitles = ["Completed", "No Action Required"]
@@ -116,6 +112,9 @@ def readLines(fileName):
     for i in range(len(lines)):
       lines[i] = lines[i][:-1]
   return lines
+
+def searchInRow(string, row):
+  return row[1] + searchLines(string, row[0])
 
 ## Searches a list of strings for an input string. Returns the line number if
 ## found and -1 if not

@@ -1,13 +1,14 @@
-## Added the ability to archive a card and made some changes to accommodate
-## the changes in helpers
+## Add the ability to add a PR to a specific card
 
 def addNotes(args):
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
   rownum = helpers.getRowNum(rows,args[0])
+  lineNum = helpers.searchInRow("cards/template.md",rows[rownum])
+  lines[lineNum] = lines[lineNum].replace("template",args[0])
+  helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
   if args[1] != "test":
-    subprocess.run(["sed","-i",str(helpers.getTemplateLine(rows[rownum])+1)+"s/template/"+args[0]+"/","bugs.md"])
     helpers.writeLines("cards/"+args[0]+".md",["[Back to Cards](../bugs.md)",""])
 
 def deleteNotes(args):
@@ -66,8 +67,33 @@ def archive(args):
   indexLines[line] = indexLines[line].replace("#ffab0f","#0c7528")
   helpers.writeLines(helpers.outputFileName("archive.md",args[1]), indexLines)
 
+  notesFile = "cards/"+args[0]+".md"
+  if os.path.exists(notesFile):
+    notesLines = helpers.readLines(notesFile)
+    notesLines[0] = "[Back to Subarchive](../"+archiveFile+")"
+    helpers.writeLines(helpers.outputFileName(notesFile,args[1]), notesLines)
+
+def addPR(args):
+  lines = helpers.readLines("bugs.md")
+  template = helpers.readLines("cardTemplate.md")
+  rows = helpers.getRows(lines, template)
+  rownum = helpers.getRowNum(rows,args[0])
+  row = rows[rownum]
+  lineNum = helpers.searchInRow("pull/",row)
+  lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[1])
+
+  helpers.writeLines(helpers.outputFileName("bugs.md",args[2]), lines)
+
+def test(args):
+  lines = helpers.readLines("bugs.md")
+  template = helpers.readLines("cardTemplate.md")
+  rows = helpers.getRows(lines, template)
+  rownum = helpers.getRowNum(rows,args[0])
+  print(helpers.getTemplateLine(rows[rownum]))
+  print(helpers.searchInRow("cards/template.md",rows[rownum]))
+
 if __name__ == "__main__":
-  import sys, helpers2 as helpers
+  import sys, helpers3 as helpers
   helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
   if len(sys.argv) < 3:
     print(helpString)
@@ -82,6 +108,8 @@ if __name__ == "__main__":
         addNotes(args)
       elif choice == "deleteNotes":
         deleteNotes(args)
+      elif choice == "test":
+        test(args)
       else:
         print(helpString)
     else:
@@ -97,15 +125,21 @@ if __name__ == "__main__":
         toQa(args)
         flag = 1
       if "n" in choice:
-        import subprocess
         addNotes(args)
         flag = 1
       if "d" in choice:
         deleteNotes(args)
         flag = 1
       if "r" in choice:
+        import os
         archive(args)
         flag = 1
+      if "p" in choice:
+        if len(args) < 3:
+          print(helpString+" <prNum>")
+        else:
+          addPR(args)
+          flag = 1
       if not flag:
         print(helpString)
 
