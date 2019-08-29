@@ -1,6 +1,5 @@
-## Add the ability to rearrange the structure and group different cards
-## together in the archive
-import colours
+## Move the config to a folder instead of a file and create an object to
+## store it. Make sure we use the config for all the scripts
 
 def addNotes(args):
   lines = helpers.readLines("bugs.md")
@@ -28,13 +27,14 @@ def toQa(args):
   rows = helpers.getRows(lines, template)
   rownum = helpers.getRowNum(rows,args[1])
   rowGroups = helpers.getRowGroups(rows, lines)
-  rowGroups[3].append(rows[rownum])
-  helpers.deleteExcept(rows[rownum],rowGroups,[3])
+  rowGroups[-2].append(rows[rownum])
+  helpers.deleteExcept(rows[rownum],rowGroups,[-2])
 
   lines = helpers.constructFile(rowGroups)
   helpers.writeToFile("bugs.md",lines,args[0])
 
 def archive(args):
+  config = load.getConfig()
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
@@ -43,7 +43,7 @@ def archive(args):
   row = rows[rownum]
   cardType = helpers.getCardType(row)
   helpers.deleteExcept(row,rowGroups,[])
-  row[0][2] = helpers.colourWrap("K"+args[1], colours.completedTable[cardType])
+  row[0][2] = helpers.colourWrap("K"+args[1], config.colour[1][cardType])
   lineNum = helpers.searchLines("\"cards/",row[0])
   if "template" in row[0][lineNum]:
     del row[0][lineNum]
@@ -53,8 +53,8 @@ def archive(args):
   lines = helpers.constructFile(rowGroups)
   helpers.writeToFile("bugs.md",lines,args[0])
 
-  config = helpers.readLines("config")
-  archiveFile = helpers.getArchiveFile(args[1], config)
+  config = load.getConfig()
+  archiveFile = helpers.getArchiveFile(args[1], config.partition)
 
   archiveLines = helpers.readLines(archiveFile)
   archiveRows = helpers.getRows(archiveLines, template)
@@ -68,7 +68,7 @@ def archive(args):
   helpers.writeToFile(archiveFile,archiveLines,args[0])
 
   indexLines = helpers.readLines("archive.md")
-  helpers.replaceColour(args[1],colours.inProgressTable[cardType],colours.completedTable[cardType],indexLines)
+  helpers.replaceColour(args[1],config.colour[0][cardType],config.colour[1][cardType],indexLines)
   helpers.writeToFile("archive.md",indexLines,args[0])
 
   notesFile = "cards/"+args[1]+".md"
@@ -89,6 +89,7 @@ def addPR(args):
   helpers.writeToFile("bugs.md",lines,args[0])
 
 def addCard(args):
+  config = load.getConfig()
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
@@ -109,7 +110,7 @@ def addCard(args):
     helpers.printHelp()
     return
 
-  colour = colours.inProgressTable[args[2]]
+  colour = config.colour[0][args[2]]
 
   description = input("Give a description for the card: ")
   helpers.replaceInLines("<description>",description,newCard[0])
@@ -130,13 +131,14 @@ def addCard(args):
   helpers.writeToFile("archive.md",indexLines,args[0])
 
 def blockCard(args):
+  config = load.getConfig()
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
   rownum = helpers.getRowNum(rows,args[1])
   row = rows[rownum]
   rowGroups = helpers.getRowGroups(rows, lines)
-  row[0][2] = helpers.colourWrap("K"+args[1], colours.inProgressTable["blocked"])
+  row[0][2] = helpers.colourWrap("K"+args[1], config.colour[0]["blocked"])
 
   helpers.deleteExcept(row,rowGroups,[])
   rowGroups[-1].append(row)
@@ -145,18 +147,21 @@ def blockCard(args):
   helpers.writeToFile("bugs.md",lines,args[0])
 
   archiveLines = helpers.readLines("archive.md")
-  helpers.setColour(args[1],colours.inProgressTable["blocked"],archiveLines)
+  helpers.setColour(args[1],config.colour[0]["blocked"],archiveLines)
   helpers.writeToFile("archive.md",archiveLines,args[0])
 
 def updateConfig(args):
   archiveLines = helpers.readLines("archive.md")
   cardLines = helpers.getCardLines(archiveLines)
-  config = helpers.readConfig("update")
-  partition = helpers.getPartition(cardLines, config)
-  archiveOut = helpers.constructArchiveFromPartition(archiveLines, partition, config)
+  config = load.getUpdateConfig()
+  if not config.partition:
+    return
+
+  partition = helpers.getPartition(cardLines, config.partition)
+  archiveOut = helpers.constructArchiveFromPartition(archiveLines, partition, config.partition)
   helpers.writeToFile("archive.md",archiveOut,args[0])
 
-  newArchives = [[[],[]] for part in range(len(config))]
+  newArchives = [[[],[]] for part in range(len(config.partition))]
   files = os.listdir("archive")
   template = helpers.readLines("cardTemplate.md")
   for f in files:
@@ -166,24 +171,29 @@ def updateConfig(args):
     for i in range(2):
       for row in rowGroups[i]:
         cardNum = helpers.sortKey(row)
-        newArchives[helpers.getArchiveIndex(cardNum, flag="update")][i].append(row)
+        newArchives[helpers.getArchiveIndex(cardNum, config.partition)][i].append(row)
+    helpers.writeToFile("archiveOld/"+f, lines, args[0])
+    if args[0] == "real":
+      os.remove("archive/"+f)
 
-  for i in range(len(config)):
+  for i in range(len(config.partition)):
     lines = helpers.constructFile(newArchives[i],fileFlag="archive")
-    helpers.writeToFile("archive/"+helpers.constructFileName(config[i]),lines,args[0])
+    helpers.writeToFile("archive/"+helpers.constructFileName(config.partition[i]),lines,args[0])
 
-  for line in cardLines:
-    if not os.path.exists("cards/" + str(line.card) + ".md"):
+  for card in cardLines.keys():
+    if not os.path.exists("cards/" + str(card) + ".md"):
       continue
-    lines = helpers.readLines("cards/" + str(line.card) + ".md")
-    lines[0] = "[Back to Subarchive](../" + helpers.getArchiveFile(line.card, flag="update") +")"
-    helpers.writeToFile("cards/" + str(line.card) + ".md", lines, args[0])
+    lines = helpers.readLines("cards/" + str(card) + ".md")
+    lines[0] = "[Back to Subarchive](../" + helpers.getArchiveFile(card, config.partition) +")"
+    helpers.writeToFile("cards/" + str(card) + ".md", lines, args[0])
+
+  load.setConfig(config, args[0])
 
 def test(args):
   helpers.writeToFile("blorg.txt",["string"],"test")
 
 if __name__ == "__main__":
-  import sys, helpers13 as helpers
+  import sys, helpers14 as helpers, configHelpers14 as load
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
     helpers.printHelp()

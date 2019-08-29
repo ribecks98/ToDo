@@ -1,5 +1,5 @@
-## Helpers functions for updating the file config
-import re, colours, helperClasses13 as helpers
+## Use the revised CardInfo class and the new Config class
+import re, colours, helperClasses14 as helpers
 
 def addZeroes(num):
   string = str(num)
@@ -62,34 +62,34 @@ def constructTable(rows, title):
   return lines
 
 def deleteExcept(row, rowGroups, toExclude):
+  for i in range(len(toExclude)):
+    toExclude[i] = toExclude[i] % len(rowGroups)
   for i in range(len(rowGroups)):
     if i in toExclude:
       continue
     if row in rowGroups[i]:
       rowGroups[i].remove(row)
 
-def getArchiveFile(card, flag=""):
-  config = readConfig(flag)
-  for i in range(len(config)):
-    if int(card) >= config[i][0] and int(card) <= config[i][1]:
-      archiveFile = "archive/" + addZeroes(config[i][0]) + "-" + addZeroes(config[i][1]) + ".md"
+def getArchiveFile(card, partitionConfig):
+  for i in range(len(partitionConfig)):
+    if int(card) >= partitionConfig[i][0] and int(card) <= partitionConfig[i][1]:
+      archiveFile = "archive/" + addZeroes(partitionConfig[i][0]) + "-" + addZeroes(partitionConfig[i][1]) + ".md"
       break
   return archiveFile
 
-def getArchiveIndex(card, flag=""):
-  config = readConfig(flag)
-  for i in range(len(config)):
-    if int(card) >= config[i][0] and int(card) <= config[i][1]:
+def getArchiveIndex(card, partitionConfig):
+  for i in range(len(partitionConfig)):
+    if int(card) >= partitionConfig[i][0] and int(card) <= partitionConfig[i][1]:
       return i
   return -1
 
 
 def getCardLines(archiveLines):
-  cardLines = []
+  cardLines = {}
   for line in archiveLines:
     card = getCardNum(line)
     if card and not "#####" in line:
-      cardLines.append(helpers.CardLine(card=int(card),line=line))
+      cardLines[int(card)] = (helpers.CardInfo(line=line))
   return cardLines
 
 def getCardNum(line):
@@ -110,12 +110,12 @@ def getCardType(row):
 def getPartition(cardLines, config):
   count = 0
   partition = [[]]
-  for line in cardLines:
-    if line.card > config[count][1]:
+  for card in cardLines.keys():
+    if card > config[count][1]:
       partition.append([])
       count = count + 1
-    partition[-1].append(line.line)
-    line.partition = count
+    partition[-1].append(cardLines[card].line)
+    cardLines[card].partition = count
   return partition
 
 ## Gets a single row in the table based on the card template, starting from
@@ -187,17 +187,6 @@ def pushRow(row, lines, linenum):
   while row[0]:
     thing = row[0].pop()
     lines.insert(linenum, thing)
-
-def readConfig(flag=""):
-  if not flag == "update":
-    configLines = readLines("config")
-  else: 
-    configLines = readLines("updateConfig")
-  for i in range(len(configLines)):
-    configLines[i] = configLines[i].split(" ")
-    for j in range(2):
-      configLines[i][j] = int(configLines[i][j])
-  return configLines
 
 ## Reads a file into a list of strings, where the ith element in the list is
 ## the content of the ith line of the file
