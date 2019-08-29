@@ -1,4 +1,4 @@
-## Add the ability to add a PR to a specific card
+## Add a function to add cards
 
 def addNotes(args):
   lines = helpers.readLines("bugs.md")
@@ -84,16 +84,47 @@ def addPR(args):
 
   helpers.writeLines(helpers.outputFileName("bugs.md",args[2]), lines)
 
-def test(args):
+def addCard(args):
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
-  rownum = helpers.getRowNum(rows,args[0])
-  print(helpers.getTemplateLine(rows[rownum]))
-  print(helpers.searchInRow("cards/template.md",rows[rownum]))
+  rowGroups = helpers.getRowGroups(rows, lines)
+  newCard = [template[5:-2],0,0]
+  helpers.replaceInLines("<cardNum>",args[0],newCard[0])
+  if args[1] == 'code':
+    del newCard[0][26:56]
+    rowGroups[0].append(newCard)
+    colour = "fuchsia"
+  elif args[1] == "review":
+    del newCard[0][6:26]
+    rowGroups[1].append(newCard)
+    colour = "#ffab0f"
+  else:
+    print(helpstring," [code,review]")
+
+  description = input("Give a description for the card: ")
+  helpers.replaceInLines("<description>",description,newCard[0])
+
+  lines = helpers.constructFile(rowGroups)
+  helpers.writeLines(helpers.outputFileName("bugs.md",args[2]), lines)
+
+  indexLines = helpers.readLines("archive.md")
+  lineNum = -1
+  for i in range(len(indexLines)):
+    match = helpers.getCardNum(indexLines[i])
+    if match and int(match) > int(args[0]):
+      lineNum = i
+      break
+  if lineNum < 0:
+    lineNum = len(indexLines)
+  indexLines.insert(lineNum,helpers.archiveLine(args[0], description, colour))
+# helpers.writeLines(helpers.outputFileName("archive.md",args[2]), indexLines)
+
+def test(args):
+  print(helpers.getCardNum(">K12345<"))
 
 if __name__ == "__main__":
-  import sys, helpers3 as helpers
+  import sys, helpers4 as helpers
   helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
   if len(sys.argv) < 3:
     print(helpString)
@@ -139,6 +170,12 @@ if __name__ == "__main__":
           print(helpString+" <prNum>")
         else:
           addPR(args)
+          flag = 1
+      if "c" in choice:
+        if len(args) < 3:
+          print(helpstring+" [code,review]")
+        else:
+          addCard(args)
           flag = 1
       if not flag:
         print(helpString)

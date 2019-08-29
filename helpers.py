@@ -1,4 +1,9 @@
-## Add a searchInRow function in place of getTemplateLine
+## Add a function to get the card number from a line if there is one, and
+## change the sorting key to use this function
+import re
+
+def archiveLine(cardNum, description, colour):
+  return "- "+colourWrap("K"+cardNum, colour).strip()+" "+description
 
 def colourWrap(string, colour):
   return "  <span style=\"color:" + colour + "\">" + string.strip() + "</span>"
@@ -36,6 +41,14 @@ def getArchiveFile(card):
       break
   return archiveFile
 
+def getCardNum(line):
+  match = re.search(">.*<", line)
+  if match:
+    return match.group(0)[2:-1]
+  match = re.search("K[0-9]*", line)
+  if match:
+    return match.group(0)[1:]
+
 ## Gets a single row in the table based on the card template, starting from
 ## the given start line. Returns the contents as a list of strings, along
 ## with the indexes of the first and last lines of the row in the original
@@ -58,6 +71,8 @@ def getRowGroups(rows,lines,fileFlag="bugs"):
     lineNums.append(searchLinesHigh("## " + title,lines))
   lineNums.append(len(lines))
   for i in range(len(titles)):
+    if i < len(titles)-1 and lineNums[i+1] == len(lines):
+      lineNums[i+1] = lineNums[i+2]
     rowGroups.append(selectRows(rows,lineNums[i],lineNums[i+1]))
   return rowGroups
 
@@ -113,6 +128,10 @@ def readLines(fileName):
       lines[i] = lines[i][:-1]
   return lines
 
+def replaceInLines(target, string, lines):
+  for i in range(len(lines)):
+    lines[i] = lines[i].replace(target,string)
+
 def searchInRow(string, row):
   return row[1] + searchLines(string, row[0])
 
@@ -147,7 +166,7 @@ def selectRows(rows, startLine, endLine):
 
 ## Returns the row with the card number
 def sortKey(row):
-  return row[0][2]
+  return int(getCardNum(row[0][2]))
 
 ## Writes a list of strings to a file, where each string is separated by a
 ## newline
