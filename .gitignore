@@ -5,6 +5,7 @@ config/*
 update/*
 *Test*
 bugs.md
+colours.py
 archive.md
 cardTemplate.md
 progress.*

@@ -1,5 +1,4 @@
-## Move the config to a folder instead of a file and create an object to
-## store it. Make sure we use the config for all the scripts
+## Add the ability to change the colour scheme using an update config
 
 def addNotes(args):
   lines = helpers.readLines("bugs.md")
@@ -151,49 +150,87 @@ def blockCard(args):
   helpers.writeToFile("archive.md",archiveLines,args[0])
 
 def updateConfig(args):
-  archiveLines = helpers.readLines("archive.md")
-  cardLines = helpers.getCardLines(archiveLines)
   config = load.getUpdateConfig()
-  if not config.partition:
+  if not config.partition and not config.colour:
     return
 
-  partition = helpers.getPartition(cardLines, config.partition)
-  archiveOut = helpers.constructArchiveFromPartition(archiveLines, partition, config.partition)
-  helpers.writeToFile("archive.md",archiveOut,args[0])
-
-  newArchives = [[[],[]] for part in range(len(config.partition))]
   files = os.listdir("archive")
   template = helpers.readLines("cardTemplate.md")
+  archiveLines = helpers.readLines("archive.md")
+  cardInfos = helpers.getCardInfos(archiveLines)
+  archiveFileRowGroups = []
   for f in files:
     lines = helpers.readLines("archive/"+f)
     rows = helpers.getRows(lines, template)
     rowGroups = helpers.getRowGroups(rows, lines, fileFlag="archive")
-    for i in range(2):
-      for row in rowGroups[i]:
-        cardNum = helpers.sortKey(row)
-        newArchives[helpers.getArchiveIndex(cardNum, config.partition)][i].append(row)
-    helpers.writeToFile("archiveOld/"+f, lines, args[0])
-    if args[0] == "real":
-      os.remove("archive/"+f)
+    archiveFileRowGroups.append(rowGroups)
+    for j in range(2):
+      for i in range(len(rowGroups[j])):
+        cardNum = helpers.sortKey(rowGroups[j][i])
+        cardInfos[cardNum].row = rowGroups[j][i] 
+        cardInfos[cardNum].rowNum = i
+        cardInfos[cardNum].rowGroup = j
 
-  for i in range(len(config.partition)):
-    lines = helpers.constructFile(newArchives[i],fileFlag="archive")
-    helpers.writeToFile("archive/"+helpers.constructFileName(config.partition[i]),lines,args[0])
+  if config.colour:
+    oldConfig = load.getConfig()
+    progressLines = helpers.readLines("bugs.md")
+    rows = helpers.getRows(progressLines, template)
+    progressCards = []
+    for i in range(len(rows)):
+      cardNum = helpers.sortKey(rows[i])
+      cardInfos[cardNum].row = rows[i] 
+      cardInfos[cardNum].rowNum = i
+      progressCards.append(cardNum)
 
-  for card in cardLines.keys():
-    if not os.path.exists("cards/" + str(card) + ".md"):
-      continue
-    lines = helpers.readLines("cards/" + str(card) + ".md")
-    lines[0] = "[Back to Subarchive](../" + helpers.getArchiveFile(card, config.partition) +")"
-    helpers.writeToFile("cards/" + str(card) + ".md", lines, args[0])
+    for card in cardInfos.keys():
+      cardInfos[card].setStatus(oldConfig.colour, progressCards)
+      helpers.updateColour(oldConfig.colour, config.colour, cardInfos[card])
+      if cardInfos[card].partition >= 0:
+        archiveFileRowGroups[cardInfos[card].partition][cardInfos[card].rowGroup][cardInfos[card].rowNum] = cardInfos[card].row
+
+    helpers.getPartition(cardInfos, oldConfig.partition)
+    archiveOut = helpers.constructArchiveFromInfos(archiveLines, cardInfos, oldConfig.partition)
+    helpers.writeToFile("archive.md",archiveOut,args[0])
+    for i in range(len(files)):
+      lines = helpers.constructFile(archiveFileRowGroups[i], fileFlag="archive")
+      helpers.writeToFile("archive/"+files[i], lines, args[0])
+
+  if config.partition:
+    partition = helpers.getPartition(cardInfos, config.partition)
+    archiveOut = helpers.constructArchiveFromPartition(archiveLines, partition, config.partition)
+    helpers.writeToFile("archive.md",archiveOut,args[0])
+
+    newArchives = [[[],[]] for part in range(len(config.partition))]
+    for f in files:
+      lines = helpers.readLines("archive/"+f)
+      rows = helpers.getRows(lines, template)
+      rowGroups = helpers.getRowGroups(rows, lines, fileFlag="archive")
+      for i in range(2):
+        for row in rowGroups[i]:
+          cardNum = helpers.sortKey(row)
+          newArchives[helpers.getArchiveIndex(cardNum, config.partition)][i].append(row)
+      helpers.writeToFile("archiveOld/"+f, lines, args[0])
+      if args[0] == "real":
+        os.remove("archive/"+f)
+
+    for i in range(len(config.partition)):
+      lines = helpers.constructFile(newArchives[i],fileFlag="archive")
+      helpers.writeToFile("archive/"+helpers.constructFileName(config.partition[i]),lines,args[0])
+
+    for card in cardInfos.keys():
+      if not os.path.exists("cards/" + str(card) + ".md"):
+        continue
+      lines = helpers.readLines("cards/" + str(card) + ".md")
+      lines[0] = "[Back to Subarchive](../" + helpers.getArchiveFile(card, config.partition) +")"
+      helpers.writeToFile("cards/" + str(card) + ".md", lines, args[0])
 
   load.setConfig(config, args[0])
 
 def test(args):
-  helpers.writeToFile("blorg.txt",["string"],"test")
+  print(helpers.getCardNum("<span style=\"color:#85a900\">K277</span>"))
 
 if __name__ == "__main__":
-  import sys, helpers14 as helpers, configHelpers14 as load
+  import sys, helpers15 as helpers, configHelpers14 as load
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
     helpers.printHelp()

@@ -1,5 +1,5 @@
-## Use the revised CardInfo class and the new Config class
-import re, colours, helperClasses14 as helpers
+## Improve colour updating
+import re, helperClasses15 as helpers
 
 def addZeroes(num):
   string = str(num)
@@ -26,6 +26,12 @@ def cleanLines(lines,length):
 
 def colourWrap(string, colour):
   return "  <span style=\"color:" + colour + "\">" + string.strip() + "</span>"
+
+def constructArchiveFromInfos(archiveLines, cardInfos, config):
+  partition = [[] for thing in config]
+  for card in sorted(cardInfos.keys()):
+    partition[cardInfos[card].partition].append(cardInfos[card].line)
+  return constructArchiveFromPartition(archiveLines, partition, config)
 
 def constructArchiveFromPartition(archiveLines, partition, config):
   archiveOut = archiveLines[:9]
@@ -84,13 +90,13 @@ def getArchiveIndex(card, partitionConfig):
   return -1
 
 
-def getCardLines(archiveLines):
-  cardLines = {}
+def getCardInfos(archiveLines):
+  cardInfos = {}
   for line in archiveLines:
     card = getCardNum(line)
     if card and not "#####" in line:
-      cardLines[int(card)] = (helpers.CardInfo(line=line))
-  return cardLines
+      cardInfos[int(card)] = (helpers.CardInfo(int(card),line=line))
+  return cardInfos
 
 def getCardNum(line):
   match = re.search(">.*<", line)
@@ -100,12 +106,11 @@ def getCardNum(line):
   if match:
     return match.group(0)[1:]
 
-def getCardType(row):
-  if colours.inProgressTable["blocked"] in row[0][2]:
-    return "blocked"
-  for key in colours.inProgressTable.keys():
-    if colours.inProgressTable[key] in row[0][9]:
-      return key
+def getCardType(colours, archiveLine):
+  for key in colours[0].keys():
+    for i in range(len(colours)):
+      if colours[i][key] in archiveLine:
+        return key
 
 def getPartition(cardLines, config):
   count = 0
@@ -197,9 +202,12 @@ def readLines(fileName):
       lines[i] = lines[i][:-1]
   return lines
 
+def replaceColour3(line,colour1,colour2):
+  return line.replace("color:"+colour1,"color:"+colour2)
+
 def replaceColour(card,colour1,colour2,lines):
   line = searchLines(card, lines)
-  lines[line] = lines[line].replace(colour1,colour2)
+  lines[line] = replaceColour3(lines[line],colour1,colour2)
 
 def replaceInLines(target, string, lines):
   for i in range(len(lines)):
@@ -245,6 +253,12 @@ def setColour(card,colour,lines):
 ## Returns the row with the card number
 def sortKey(row):
   return int(getCardNum(row[0][2]))
+
+def updateColour(config, updateConfig, cardInfo):
+  status = cardInfo.status.status
+  complete = cardInfo.status.complete
+  cardInfo.line = replaceColour3(cardInfo.line,config[complete][status],updateConfig[complete][status])
+  cardInfo.row[0][2] = replaceColour3(cardInfo.row[0][2],config[complete][status],updateConfig[complete][status])
 
 def writeToFile(fileName, lines, testFlag=""):
   if testFlag == "test":
