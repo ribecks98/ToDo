@@ -1,5 +1,11 @@
-## Add a function to print the help string
-import re, colours
+## Helpers functions for updating the file config
+import re, colours, helperClasses13 as helpers
+
+def addZeroes(num):
+  string = str(num)
+  while len(string) < 5:
+    string = "0"+string
+  return string
 
 def appendToTestFile(fileName):
   with open("testOut.md","a") as testFile:
@@ -21,6 +27,20 @@ def cleanLines(lines,length):
 def colourWrap(string, colour):
   return "  <span style=\"color:" + colour + "\">" + string.strip() + "</span>"
 
+def constructArchiveFromPartition(archiveLines, partition, config):
+  archiveOut = archiveLines[:9]
+  for i in range(len(config)):
+    archiveOut.extend([constructArchiveLink(config[i]),""])
+    archiveOut.extend(partition[i])
+    archiveOut.append("")
+  return archiveOut
+
+def constructArchiveLink(configLine):
+  start = addZeroes(configLine[0])
+  end = addZeroes(configLine[1])
+  return "##### [K" + start + "-K" + end + \
+  "](archive/" + start + "-" + end + ".md)"
+
 ## Constructs the MarkDown file based from the row groups
 def constructFile(rowGroups, fileFlag="bugs"):
   lines = getStartLines(fileFlag)
@@ -29,6 +49,9 @@ def constructFile(rowGroups, fileFlag="bugs"):
     if rowGroups[i] != []:
       lines.extend(constructTable(rowGroups[i],titles[i]))
   return lines
+
+def constructFileName(configLine):
+  return addZeroes(configLine[0]) + "-" + addZeroes(configLine[1]) + ".md"
 
 ## Constructs a single table from the rows in it
 def constructTable(rows, title):
@@ -45,14 +68,29 @@ def deleteExcept(row, rowGroups, toExclude):
     if row in rowGroups[i]:
       rowGroups[i].remove(row)
 
-def getArchiveFile(card):
-  config = readLines("config")
-  for line in config:
-    bounds = line.split(" ")
-    if int(card) >= int(bounds[0]) and int(card) <= int(bounds[1]):
-      archiveFile = "archive/" + bounds[0] + "-" + bounds[1] + ".md"
+def getArchiveFile(card, flag=""):
+  config = readConfig(flag)
+  for i in range(len(config)):
+    if int(card) >= config[i][0] and int(card) <= config[i][1]:
+      archiveFile = "archive/" + addZeroes(config[i][0]) + "-" + addZeroes(config[i][1]) + ".md"
       break
   return archiveFile
+
+def getArchiveIndex(card, flag=""):
+  config = readConfig(flag)
+  for i in range(len(config)):
+    if int(card) >= config[i][0] and int(card) <= config[i][1]:
+      return i
+  return -1
+
+
+def getCardLines(archiveLines):
+  cardLines = []
+  for line in archiveLines:
+    card = getCardNum(line)
+    if card and not "#####" in line:
+      cardLines.append(helpers.CardLine(card=int(card),line=line))
+  return cardLines
 
 def getCardNum(line):
   match = re.search(">.*<", line)
@@ -68,6 +106,17 @@ def getCardType(row):
   for key in colours.inProgressTable.keys():
     if colours.inProgressTable[key] in row[0][9]:
       return key
+
+def getPartition(cardLines, config):
+  count = 0
+  partition = [[]]
+  for line in cardLines:
+    if line.card > config[count][1]:
+      partition.append([])
+      count = count + 1
+    partition[-1].append(line.line)
+    line.partition = count
+  return partition
 
 ## Gets a single row in the table based on the card template, starting from
 ## the given start line. Returns the contents as a list of strings, along
@@ -138,6 +187,17 @@ def pushRow(row, lines, linenum):
   while row[0]:
     thing = row[0].pop()
     lines.insert(linenum, thing)
+
+def readConfig(flag=""):
+  if not flag == "update":
+    configLines = readLines("config")
+  else: 
+    configLines = readLines("updateConfig")
+  for i in range(len(configLines)):
+    configLines[i] = configLines[i].split(" ")
+    for j in range(2):
+      configLines[i][j] = int(configLines[i][j])
+  return configLines
 
 ## Reads a file into a list of strings, where the ith element in the list is
 ## the content of the ith line of the file
