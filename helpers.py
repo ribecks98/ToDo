@@ -1,4 +1,4 @@
-## Improve colour updating
+## Change the updateColour functions
 import re, helperClasses15 as helpers
 
 def addZeroes(num):
@@ -111,6 +111,13 @@ def getCardType(colours, archiveLine):
     for i in range(len(colours)):
       if colours[i][key] in archiveLine:
         return key
+
+def getCardTypeFromRow(colours, row):
+  for key in colours[0].keys():
+    for i in range(len(colours)):
+      if colours[i][key] in row[0][9]:
+        return key
+  
 
 def getPartition(cardLines, config):
   count = 0
@@ -245,8 +252,8 @@ def selectRows(rows, startLine, endLine):
     return rows[start:]
   return rows[start:end]
 
-def setColour(card,colour,lines):
-  for table in [colours.inProgressTable, colours.completedTable]:
+def setColour(card,colour,lines,colours):
+  for table in colours:
     for key in table.keys():
       replaceColour(card,table[key],colour,lines)
 
@@ -254,11 +261,14 @@ def setColour(card,colour,lines):
 def sortKey(row):
   return int(getCardNum(row[0][2]))
 
-def updateColour(config, updateConfig, cardInfo):
+def updateColourByConfig(config, updateConfig, cardInfo):
   status = cardInfo.status.status
   complete = cardInfo.status.complete
-  cardInfo.line = replaceColour3(cardInfo.line,config[complete][status],updateConfig[complete][status])
-  cardInfo.row[0][2] = replaceColour3(cardInfo.row[0][2],config[complete][status],updateConfig[complete][status])
+  updateColour(config[complete][status],updateConfig[complete][status],cardInfo)
+
+def updateColour(colour1, colour2, cardInfo):
+  cardInfo.line = replaceColour3(cardInfo.line,colour1,colour2)
+  cardInfo.row[0][2] = replaceColour3(cardInfo.row[0][2],colour1,colour2)
 
 def writeToFile(fileName, lines, testFlag=""):
   if testFlag == "test":

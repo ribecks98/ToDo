@@ -1,5 +1,5 @@
-## Add a state and a setStatus method for CardInfo
-import helpers15 as helpers
+## Add the card number back into the CardInfo object
+import helpers16 as helpers
 
 class CardInfo:
   card = -1

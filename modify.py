@@ -1,4 +1,4 @@
-## Add the ability to change the colour scheme using an update config
+## Add the ability to unblock a blocked card
 
 def addNotes(args):
   lines = helpers.readLines("bugs.md")
@@ -40,7 +40,10 @@ def archive(args):
   rownum = helpers.getRowNum(rows,args[1])
   rowGroups = helpers.getRowGroups(rows, lines)
   row = rows[rownum]
-  cardType = helpers.getCardType(row)
+
+  indexLines = helpers.readLines("archive.md")
+  lineNum = helpers.searchLines(args[1],indexLines)
+  cardType = helpers.getCardType(config.colour, indexLines[lineNum])
   helpers.deleteExcept(row,rowGroups,[])
   row[0][2] = helpers.colourWrap("K"+args[1], config.colour[1][cardType])
   lineNum = helpers.searchLines("\"cards/",row[0])
@@ -52,9 +55,7 @@ def archive(args):
   lines = helpers.constructFile(rowGroups)
   helpers.writeToFile("bugs.md",lines,args[0])
 
-  config = load.getConfig()
   archiveFile = helpers.getArchiveFile(args[1], config.partition)
-
   archiveLines = helpers.readLines(archiveFile)
   archiveRows = helpers.getRows(archiveLines, template)
   archiveRowGroups = helpers.getRowGroups(archiveRows, archiveLines, fileFlag="archive")
@@ -66,7 +67,6 @@ def archive(args):
   archiveLines = helpers.constructFile(archiveRowGroups,fileFlag="archive")
   helpers.writeToFile(archiveFile,archiveLines,args[0])
 
-  indexLines = helpers.readLines("archive.md")
   helpers.replaceColour(args[1],config.colour[0][cardType],config.colour[1][cardType],indexLines)
   helpers.writeToFile("archive.md",indexLines,args[0])
 
@@ -146,7 +146,7 @@ def blockCard(args):
   helpers.writeToFile("bugs.md",lines,args[0])
 
   archiveLines = helpers.readLines("archive.md")
-  helpers.setColour(args[1],config.colour[0]["blocked"],archiveLines)
+  helpers.setColour(args[1],config.colour[0]["blocked"],archiveLines,config.colour)
   helpers.writeToFile("archive.md",archiveLines,args[0])
 
 def updateConfig(args):
@@ -184,7 +184,7 @@ def updateConfig(args):
 
     for card in cardInfos.keys():
       cardInfos[card].setStatus(oldConfig.colour, progressCards)
-      helpers.updateColour(oldConfig.colour, config.colour, cardInfos[card])
+      helpers.updateColourByConfig(oldConfig.colour, config.colour, cardInfos[card])
       if cardInfos[card].partition >= 0:
         archiveFileRowGroups[cardInfos[card].partition][cardInfos[card].rowGroup][cardInfos[card].rowNum] = cardInfos[card].row
 
@@ -226,11 +226,40 @@ def updateConfig(args):
 
   load.setConfig(config, args[0])
 
+def unblockCard(args):
+  config = load.getConfig()
+  lines = helpers.readLines("bugs.md")
+  template = helpers.readLines("cardTemplate.md")
+  rows = helpers.getRows(lines, template)
+  rownum = helpers.getRowNum(rows,args[1])
+  row = rows[rownum]
+  rowGroups = helpers.getRowGroups(rows, lines)
+
+  archiveLines = helpers.readLines("archive.md")
+  lineNum = helpers.searchLines(args[1], archiveLines)
+  cardInfo = helperClasses.CardInfo(int(args[1]), line=archiveLines[lineNum], row=row)
+  cardType = helpers.getCardTypeFromRow(config.colour, row)
+  helpers.updateColour(config.colour[0]["blocked"],config.colour[0][cardType],cardInfo)
+  helpers.deleteExcept(row, rowGroups, [])
+  cardInfo.row[0][2] = "  K"+args[1]
+  if cardType == "code":
+    rowGroups[0].append(cardInfo.row)
+  elif cardType == "review":
+    rowGroups[1].append(cardInfo.row)
+  elif cardType == "investigate":
+    rowGroups[2].append(cardInfo.row)
+
+  lines = helpers.constructFile(rowGroups)
+  helpers.writeToFile("bugs.md", lines, args[0])
+
+  archiveLines[lineNum] = cardInfo.line
+  helpers.writeToFile("archive.md", archiveLines, args[0])
+
 def test(args):
   print(helpers.getCardNum("<span style=\"color:#85a900\">K277</span>"))
 
 if __name__ == "__main__":
-  import sys, helpers15 as helpers, configHelpers14 as load
+  import sys, helpers16 as helpers, configHelpers16 as load, helperClasses16 as helperClasses
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
     helpers.printHelp()
@@ -277,6 +306,9 @@ if __name__ == "__main__":
       if "u" in choice:
         import os
         updateConfig(args)
+        flag = 1
+      if "z" in choice:
+        unblockCard(args)
         flag = 1
       if not flag:
         helpers.printHelp()
