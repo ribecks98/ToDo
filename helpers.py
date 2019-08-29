@@ -1,4 +1,4 @@
-## Add some functions to help set the colours
+## Change the config file from config.md to config
 import re, colours
 
 def archiveLine(cardNum, description, colour):
@@ -9,7 +9,7 @@ def colourWrap(string, colour):
 
 ## Constructs the MarkDown file based from the row groups
 def constructFile(rowGroups, fileFlag="bugs"):
-  lines = ["<title>Bug Checklists</title>","","[Back to Archive](../archive.md)"]
+  lines = getStartLines(fileFlag)
   titles = getTitles(fileFlag)
   for i in range(len(titles)):
     if rowGroups[i] != []:
@@ -32,7 +32,7 @@ def deleteExcept(row, rowGroups, toExclude):
       rowGroups[i].remove(row)
 
 def getArchiveFile(card):
-  config = readLines("config.md")
+  config = readLines("config")
   for line in config:
     bounds = line.split(" ")
     if int(card) >= int(bounds[0]) and int(card) <= int(bounds[1]):
@@ -98,6 +98,11 @@ def getRows(lines, template):
     rows.append(result)
     start = result[2]
   return rows[:-1]
+
+def getStartLines(fileFlag):
+  if fileFlag == "bugs":
+    return ["<title>Bug Checklists</title>","","[Back to Archive](archive.md)"]
+  return ["<title>Bug Checklists</title>","","[Back to Archive](../archive.md)"]
 
 def getTitles(fileFlag):
   bugTitles = ["In Progress", "Code Reviews", "In QA", "Blocked"]

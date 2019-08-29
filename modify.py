@@ -1,4 +1,4 @@
-## Add the ability to block a card
+## Fix the links to notes when we archive a card
 import colours
 
 def addNotes(args):
@@ -49,6 +49,11 @@ def archive(args):
   cardType = helpers.getCardType(row)
   helpers.deleteExcept(row,rowGroups,[])
   row[0][2] = helpers.colourWrap("K"+args[0], colours.completedTable[cardType])
+  lineNum = helpers.searchLines("\"cards/",row[0])
+  if "template" in row[0][lineNum]:
+    del row[0][lineNum]
+  else:
+    row[0][lineNum] = row[0][lineNum].replace("\"cards","\"../cards")
 
   lines = helpers.constructFile(rowGroups)
   helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
@@ -74,7 +79,7 @@ def archive(args):
   if os.path.exists(notesFile):
     notesLines = helpers.readLines(notesFile)
     notesLines[0] = "[Back to Subarchive](../"+archiveFile+")"
-#   helpers.writeLines(helpers.outputFileName(notesFile,args[1]), notesLines)
+    helpers.writeLines(helpers.outputFileName(notesFile,args[1]), notesLines)
 
 def addPR(args):
   lines = helpers.readLines("bugs.md")
@@ -153,7 +158,7 @@ def test(args):
   helpers.printLines(lines)
 
 if __name__ == "__main__":
-  import sys, helpers7 as helpers
+  import sys, helpers8 as helpers
   helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
