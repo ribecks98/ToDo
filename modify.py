@@ -1,4 +1,4 @@
-## Add the ability to archive blocked cards
+## Add the ability to block a card
 import colours
 
 def addNotes(args):
@@ -67,9 +67,8 @@ def archive(args):
   helpers.writeLines(helpers.outputFileName(archiveFile,args[1]), archiveLines)
 
   indexLines = helpers.readLines("archive.md")
-  line = helpers.searchLines(args[0], indexLines)
-  indexLines[line] = indexLines[line].replace(colours.inProgressTable[cardType],colours.completedTable[cardType])
-# helpers.writeLines(helpers.outputFileName("archive.md",args[1]), indexLines)
+  helpers.replaceColour(args[0],colours.inProgressTable[cardType],colours.completedTable[cardType],indexLines)
+  helpers.writeLines(helpers.outputFileName("archive.md",args[1]), indexLines)
 
   notesFile = "cards/"+args[0]+".md"
   if os.path.exists(notesFile):
@@ -129,11 +128,32 @@ def addCard(args):
   indexLines.insert(lineNum,helpers.archiveLine(args[0], description, colour))
   helpers.writeLines(helpers.outputFileName("archive.md",args[2]), indexLines)
 
+def blockCard(args):
+  lines = helpers.readLines("bugs.md")
+  template = helpers.readLines("cardTemplate.md")
+  rows = helpers.getRows(lines, template)
+  rownum = helpers.getRowNum(rows,args[0])
+  row = rows[rownum]
+  rowGroups = helpers.getRowGroups(rows, lines)
+  row[0][2] = helpers.colourWrap("K"+args[0], colours.inProgressTable["blocked"])
+
+  helpers.deleteExcept(row,rowGroups,[])
+  rowGroups[3].append(row)
+
+  lines = helpers.constructFile(rowGroups)
+  helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
+
+  archiveLines = helpers.readLines("archive.md")
+  helpers.setColour(args[0],colours.inProgressTable["blocked"],archiveLines)
+  helpers.writeLines(helpers.outputFileName("archive.md",args[1]), archiveLines)
+
 def test(args):
-  print(helpers.getCardType([["","","","","","","","","","<span style=\"color:#ffab0f\">"],0,0]))
+  lines = helpers.readLines("archive.md")
+  helpers.setColour(args[0],colours.inProgressTable["blocked"],lines)
+  helpers.printLines(lines)
 
 if __name__ == "__main__":
-  import sys, helpers6 as helpers
+  import sys, helpers7 as helpers
   helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
@@ -142,14 +162,7 @@ if __name__ == "__main__":
     choice = sys.argv[1]
     args = sys.argv[2:]
     if choice[0] != "-":
-      if choice == "toQa":
-        toQa(args)
-      elif choice == "addNotes":
-        import subprocess
-        addNotes(args)
-      elif choice == "deleteNotes":
-        deleteNotes(args)
-      elif choice == "test":
+      if choice == "test":
         test(args)
       else:
         print(helpString)
@@ -187,6 +200,9 @@ if __name__ == "__main__":
         else:
           addCard(args)
           flag = 1
+      if "b" in choice:
+        blockCard(args)
+        flag = 1
       if not flag:
         print(helpString)
 

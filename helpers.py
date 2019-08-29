@@ -1,4 +1,4 @@
-## Add the ability to archive blocked cards
+## Add some functions to help set the colours
 import re, colours
 
 def archiveLine(cardNum, description, colour):
@@ -9,7 +9,7 @@ def colourWrap(string, colour):
 
 ## Constructs the MarkDown file based from the row groups
 def constructFile(rowGroups, fileFlag="bugs"):
-  lines = ["<title>Bug Checklists</title>","","[Back to Archive](./archive.md)"]
+  lines = ["<title>Bug Checklists</title>","","[Back to Archive](../archive.md)"]
   titles = getTitles(fileFlag)
   for i in range(len(titles)):
     if rowGroups[i] != []:
@@ -134,6 +134,10 @@ def readLines(fileName):
       lines[i] = lines[i][:-1]
   return lines
 
+def replaceColour(card,colour1,colour2,lines):
+  line = searchLines(card, lines)
+  lines[line] = lines[line].replace(colour1,colour2)
+
 def replaceInLines(target, string, lines):
   for i in range(len(lines)):
     lines[i] = lines[i].replace(target,string)
@@ -169,6 +173,11 @@ def selectRows(rows, startLine, endLine):
   if end < 0:
     return rows[start:]
   return rows[start:end]
+
+def setColour(card,colour,lines):
+  for table in [colours.inProgressTable, colours.completedTable]:
+    for key in table.keys():
+      replaceColour(card,table[key],colour,lines)
 
 ## Returns the row with the card number
 def sortKey(row):
