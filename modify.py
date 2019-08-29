@@ -1,54 +1,49 @@
-## Add a way to get links to all the test output files when testing
+## Prepend the test flag instead of appending it so the indexes of other 
+## arguments don't change. Also fix a few bugs along the way
 import colours
 
 def addNotes(args):
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
-  rownum = helpers.getRowNum(rows,args[0])
+  rownum = helpers.getRowNum(rows,args[1])
   lineNum = helpers.searchInRow("cards/template.md",rows[rownum])
-  lines[lineNum] = lines[lineNum].replace("template",args[0])
-  helpers.writeToFile("bugs.md",lines,args[1])
-  if args[1] != "test":
-    helpers.writeLines("cards/"+args[0]+".md",["[Back to Cards](../bugs.md)",""])
+  lines[lineNum] = lines[lineNum].replace("template",args[1])
+  helpers.writeToFile("bugs.md",lines,args[0])
+  helpers.writeToFile("cards/"+args[1]+".md",["[Back to Cards](../bugs.md)",""],args[0])
 
 def deleteNotes(args):
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   startLines = len(lines)
   rows = helpers.getRows(lines,template)
-  rownum = helpers.getRowNum(rows,args[0])
-  del lines[helpers.getTemplateLine(rows[rownum])]
-  
-  if args[1] == "test":
-    fileName = "testOut.md"
-  else: 
-    fileName = "bugs.md"
-  helpers.writeLines(fileName, lines)
+  rownum = helpers.getRowNum(rows,args[1])
+  del lines[helpers.searchInRow("template",rows[rownum])]
+  helpers.writeToFile("bugs.md",lines,args[0])
 
 def toQa(args):
   lines = helpers.readLines("bugs.md")
   startLines = len(lines)
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
-  rownum = helpers.getRowNum(rows,args[0])
+  rownum = helpers.getRowNum(rows,args[1])
   rowGroups = helpers.getRowGroups(rows, lines)
   rowGroups[2].append(rows[rownum])
   helpers.deleteExcept(rows[rownum],rowGroups,[2])
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeToFile("bugs.md",lines,args[1])
+  helpers.writeToFile("bugs.md",lines,args[0])
 
 def archive(args):
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
-  rownum = helpers.getRowNum(rows,args[0])
+  rownum = helpers.getRowNum(rows,args[1])
   rowGroups = helpers.getRowGroups(rows, lines)
   row = rows[rownum]
   cardType = helpers.getCardType(row)
   helpers.deleteExcept(row,rowGroups,[])
-  row[0][2] = helpers.colourWrap("K"+args[0], colours.completedTable[cardType])
+  row[0][2] = helpers.colourWrap("K"+args[1], colours.completedTable[cardType])
   lineNum = helpers.searchLines("\"cards/",row[0])
   if "template" in row[0][lineNum]:
     del row[0][lineNum]
@@ -56,9 +51,9 @@ def archive(args):
     row[0][lineNum] = row[0][lineNum].replace("\"cards","\"../cards")
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeToFile("bugs.md",lines,args[1])
+  helpers.writeToFile("bugs.md",lines,args[0])
 
-  archiveFile = helpers.getArchiveFile(args[0])
+  archiveFile = helpers.getArchiveFile(args[1])
 
   archiveLines = helpers.readLines(archiveFile)
   archiveRows = helpers.getRows(archiveLines, template)
@@ -69,28 +64,28 @@ def archive(args):
     archiveRowGroups[0].append(row)
 
   archiveLines = helpers.constructFile(archiveRowGroups,fileFlag="archive")
-  helpers.writeToFile(archiveFile,archiveLines,args[1])
+  helpers.writeToFile(archiveFile,archiveLines,args[0])
 
   indexLines = helpers.readLines("archive.md")
-  helpers.replaceColour(args[0],colours.inProgressTable[cardType],colours.completedTable[cardType],indexLines)
+  helpers.replaceColour(args[1],colours.inProgressTable[cardType],colours.completedTable[cardType],indexLines)
   helpers.writeToFile("archive.md",indexLines,args[1])
 
-  notesFile = "cards/"+args[0]+".md"
+  notesFile = "cards/"+args[1]+".md"
   if os.path.exists(notesFile):
     notesLines = helpers.readLines(notesFile)
     notesLines[0] = "[Back to Subarchive](../"+archiveFile+")"
-    helpers.writeToFile(notesFile,notesLines,args[1])
+    helpers.writeToFile(notesFile,notesLines,args[0])
 
 def addPR(args):
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
-  rownum = helpers.getRowNum(rows,args[0])
+  rownum = helpers.getRowNum(rows,args[1])
   row = rows[rownum]
   lineNum = helpers.searchInRow("pull/",row)
-  lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[1])
+  lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[2])
 
-  helpers.writeToFile("bugs.md",lines,args[2])
+  helpers.writeToFile("bugs.md",lines,args[0])
 
 def addCard(args):
   lines = helpers.readLines("bugs.md")
@@ -98,65 +93,65 @@ def addCard(args):
   rows = helpers.getRows(lines, template)
   rowGroups = helpers.getRowGroups(rows, lines)
   newCard = [template[5:-1],0,0]
-  helpers.replaceInLines("<cardNum>",args[0],newCard[0])
-  if args[1] == "code":
+  helpers.replaceInLines("<cardNum>",args[1],newCard[0])
+  if args[2] == "code":
     del newCard[0][26:67]
     rowGroups[0].append(newCard)
-  elif args[1] == "review":
-    del newCard[0][6:26]
+  elif args[2] == "review":
     del newCard[0][57:67]
+    del newCard[0][6:26]
     rowGroups[1].append(newCard)
-  elif args[1] == "investigate":
+  elif args[2] == "investigate":
     del newCard[0][6:57]
-    rowGroups[0].append(newCard)
+    rowGroups[2].append(newCard)
   else:
     print(helpString," [code,review,investigate]")
     return
 
-  colour = colours.inProgressTable[args[1]]
+  colour = colours.inProgressTable[args[2]]
 
   description = input("Give a description for the card: ")
   helpers.replaceInLines("<description>",description,newCard[0])
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeToFile("bugs.md",lines,args[2])
+  helpers.writeToFile("bugs.md",lines,args[0])
 
   indexLines = helpers.readLines("archive.md")
   lineNum = -1
   for i in range(len(indexLines)):
     match = helpers.getCardNum(indexLines[i])
-    if match and int(match) > int(args[0]):
+    if match and int(match) > int(args[1]):
       lineNum = i
       break
   if lineNum < 0:
     lineNum = len(indexLines)
-  indexLines.insert(lineNum,helpers.archiveLine(args[0], description, colour))
-  helpers.writeToFile("archive.md",indexLines,args[2])
+  indexLines.insert(lineNum,helpers.archiveLine(args[1], description, colour))
+  helpers.writeToFile("archive.md",indexLines,args[0])
 
 def blockCard(args):
   lines = helpers.readLines("bugs.md")
   template = helpers.readLines("cardTemplate.md")
   rows = helpers.getRows(lines, template)
-  rownum = helpers.getRowNum(rows,args[0])
+  rownum = helpers.getRowNum(rows,args[1])
   row = rows[rownum]
   rowGroups = helpers.getRowGroups(rows, lines)
-  row[0][2] = helpers.colourWrap("K"+args[0], colours.inProgressTable["blocked"])
+  row[0][2] = helpers.colourWrap("K"+args[1], colours.inProgressTable["blocked"])
 
   helpers.deleteExcept(row,rowGroups,[])
-  rowGroups[3].append(row)
+  rowGroups[-1].append(row)
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeToFile("bugs.md",lines,args[1])
+  helpers.writeToFile("bugs.md",lines,args[0])
 
   archiveLines = helpers.readLines("archive.md")
-  helpers.setColour(args[0],colours.inProgressTable["blocked"],archiveLines)
-  helpers.writeToFile("archive.md",archiveLines,args[1])
+  helpers.setColour(args[1],colours.inProgressTable["blocked"],archiveLines)
+  helpers.writeToFile("archive.md",archiveLines,args[0])
 
 def test(args):
   helpers.writeToFile("blorg.txt",["string"],"test")
 
 if __name__ == "__main__":
-  import sys, helpers9 as helpers
+  import sys, helpers10 as helpers
   helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
@@ -175,7 +170,7 @@ if __name__ == "__main__":
         print("Can't have multiple choices")
         choice = "-"
       if "t" in choice:
-        args.append("test")
+        args.insert(0,"test")
         helpers.writeLines("testOut.md",["[Back to Archive](archive.md)","","## Test result files",""])
       else:
         args.append("real")

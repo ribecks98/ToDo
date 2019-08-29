@@ -1,4 +1,4 @@
-## Add a function to decide where to write the file to
+## Add an "Investigations" section and fix getRowGroups bug
 import re, colours
 
 def appendToTestFile(fileName):
@@ -7,6 +7,16 @@ def appendToTestFile(fileName):
 
 def archiveLine(cardNum, description, colour):
   return "- "+colourWrap("K"+cardNum, colour).strip()+" "+description
+
+def cleanLines(lines,length):
+  for i in range(len(lines)):
+    if lines[i] == length:
+      j = i+1
+      while j < len(lines):
+        if lines[j] < length:
+          lines[i] = lines[j]
+          break
+        j = j+1
 
 def colourWrap(string, colour):
   return "  <span style=\"color:" + colour + "\">" + string.strip() + "</span>"
@@ -80,9 +90,8 @@ def getRowGroups(rows,lines,fileFlag="bugs"):
   for title in titles:
     lineNums.append(searchLinesHigh("## " + title,lines))
   lineNums.append(len(lines))
+  cleanLines(lineNums,len(lines))
   for i in range(len(titles)):
-    if i < len(titles)-1 and lineNums[i+1] == len(lines):
-      lineNums[i+1] = lineNums[i+2]
     rowGroups.append(selectRows(rows,lineNums[i],lineNums[i+1]))
   return rowGroups
 
@@ -109,7 +118,7 @@ def getStartLines(fileFlag):
   return ["<title>Bug Checklists</title>","","[Back to Archive](../archive.md)"]
 
 def getTitles(fileFlag):
-  bugTitles = ["In Progress", "Code Reviews", "In QA", "Blocked"]
+  bugTitles = ["In Progress", "Code Reviews", "Investigations", "In QA", "Blocked"]
   archiveTitles = ["Completed", "No Action Required"]
   if fileFlag == "bugs":
     return bugTitles
