@@ -1,5 +1,4 @@
-## Prepend the test flag instead of appending it so the indexes of other 
-## arguments don't change. Also fix a few bugs along the way
+## Also prepend for the real thing so that doesn't break
 import colours
 
 def addNotes(args):
@@ -173,7 +172,7 @@ if __name__ == "__main__":
         args.insert(0,"test")
         helpers.writeLines("testOut.md",["[Back to Archive](archive.md)","","## Test result files",""])
       else:
-        args.append("real")
+        args.insert(0,"real")
       if "q" in choice: 
         toQa(args)
         flag = 1
