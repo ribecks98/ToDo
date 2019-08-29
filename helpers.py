@@ -1,5 +1,9 @@
-## Change the config file from config.md to config
+## Add a function to decide where to write the file to
 import re, colours
+
+def appendToTestFile(fileName):
+  with open("testOut.md","a") as testFile:
+    testFile.write("- ["+fileName+"]("+fileName+")\n")   
 
 def archiveLine(cardNum, description, colour):
   return "- "+colourWrap("K"+cardNum, colour).strip()+" "+description
@@ -112,13 +116,6 @@ def getTitles(fileFlag):
   else:
     return archiveTitles
 
-## Determines the file name of the output of the script based on whether it
-## is a test or not
-def outputFileName(fileName,flag):
-  if flag == "test":
-    return "testOut.md"
-  return fileName
-
 ## Prints a list of strings to the console
 def printLines(lines):
   for line in lines:
@@ -187,6 +184,15 @@ def setColour(card,colour,lines):
 ## Returns the row with the card number
 def sortKey(row):
   return int(getCardNum(row[0][2]))
+
+def writeToFile(fileName, lines, testFlag=""):
+  if testFlag == "test":
+    if "/" in fileName:
+      fileName = fileName.replace("/","Test/",1)
+    else:
+      fileName = fileName.replace(".","Test.")
+    appendToTestFile(fileName)
+  writeLines(fileName, lines)
 
 ## Writes a list of strings to a file, where each string is separated by a
 ## newline

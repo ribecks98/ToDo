@@ -1,4 +1,4 @@
-## Fix the links to notes when we archive a card
+## Add a way to get links to all the test output files when testing
 import colours
 
 def addNotes(args):
@@ -8,7 +8,7 @@ def addNotes(args):
   rownum = helpers.getRowNum(rows,args[0])
   lineNum = helpers.searchInRow("cards/template.md",rows[rownum])
   lines[lineNum] = lines[lineNum].replace("template",args[0])
-  helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
+  helpers.writeToFile("bugs.md",lines,args[1])
   if args[1] != "test":
     helpers.writeLines("cards/"+args[0]+".md",["[Back to Cards](../bugs.md)",""])
 
@@ -37,7 +37,7 @@ def toQa(args):
   helpers.deleteExcept(rows[rownum],rowGroups,[2])
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
+  helpers.writeToFile("bugs.md",lines,args[1])
 
 def archive(args):
   lines = helpers.readLines("bugs.md")
@@ -56,7 +56,7 @@ def archive(args):
     row[0][lineNum] = row[0][lineNum].replace("\"cards","\"../cards")
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
+  helpers.writeToFile("bugs.md",lines,args[1])
 
   archiveFile = helpers.getArchiveFile(args[0])
 
@@ -69,17 +69,17 @@ def archive(args):
     archiveRowGroups[0].append(row)
 
   archiveLines = helpers.constructFile(archiveRowGroups,fileFlag="archive")
-  helpers.writeLines(helpers.outputFileName(archiveFile,args[1]), archiveLines)
+  helpers.writeToFile(archiveFile,archiveLines,args[1])
 
   indexLines = helpers.readLines("archive.md")
   helpers.replaceColour(args[0],colours.inProgressTable[cardType],colours.completedTable[cardType],indexLines)
-  helpers.writeLines(helpers.outputFileName("archive.md",args[1]), indexLines)
+  helpers.writeToFile("archive.md",indexLines,args[1])
 
   notesFile = "cards/"+args[0]+".md"
   if os.path.exists(notesFile):
     notesLines = helpers.readLines(notesFile)
     notesLines[0] = "[Back to Subarchive](../"+archiveFile+")"
-    helpers.writeLines(helpers.outputFileName(notesFile,args[1]), notesLines)
+    helpers.writeToFile(notesFile,notesLines,args[1])
 
 def addPR(args):
   lines = helpers.readLines("bugs.md")
@@ -90,7 +90,7 @@ def addPR(args):
   lineNum = helpers.searchInRow("pull/",row)
   lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[1])
 
-  helpers.writeLines(helpers.outputFileName("bugs.md",args[2]), lines)
+  helpers.writeToFile("bugs.md",lines,args[2])
 
 def addCard(args):
   lines = helpers.readLines("bugs.md")
@@ -119,7 +119,7 @@ def addCard(args):
   helpers.replaceInLines("<description>",description,newCard[0])
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeLines(helpers.outputFileName("bugs.md",args[2]), lines)
+  helpers.writeToFile("bugs.md",lines,args[2])
 
   indexLines = helpers.readLines("archive.md")
   lineNum = -1
@@ -131,7 +131,7 @@ def addCard(args):
   if lineNum < 0:
     lineNum = len(indexLines)
   indexLines.insert(lineNum,helpers.archiveLine(args[0], description, colour))
-  helpers.writeLines(helpers.outputFileName("archive.md",args[2]), indexLines)
+  helpers.writeToFile("archive.md",indexLines,args[2])
 
 def blockCard(args):
   lines = helpers.readLines("bugs.md")
@@ -146,19 +146,17 @@ def blockCard(args):
   rowGroups[3].append(row)
 
   lines = helpers.constructFile(rowGroups)
-  helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
+  helpers.writeToFile("bugs.md",lines,args[1])
 
   archiveLines = helpers.readLines("archive.md")
   helpers.setColour(args[0],colours.inProgressTable["blocked"],archiveLines)
-  helpers.writeLines(helpers.outputFileName("archive.md",args[1]), archiveLines)
+  helpers.writeToFile("archive.md",archiveLines,args[1])
 
 def test(args):
-  lines = helpers.readLines("archive.md")
-  helpers.setColour(args[0],colours.inProgressTable["blocked"],lines)
-  helpers.printLines(lines)
+  helpers.writeToFile("blorg.txt",["string"],"test")
 
 if __name__ == "__main__":
-  import sys, helpers8 as helpers
+  import sys, helpers9 as helpers
   helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
@@ -178,6 +176,7 @@ if __name__ == "__main__":
         choice = "-"
       if "t" in choice:
         args.append("test")
+        helpers.writeLines("testOut.md",["[Back to Archive](archive.md)","","## Test result files",""])
       else:
         args.append("real")
       if "q" in choice: 
