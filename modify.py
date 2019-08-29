@@ -1,5 +1,4 @@
-## Add an investigate type card and use the colours file to set colours
-## instead of defining them explicitly
+## Add the ability to archive blocked cards
 import colours
 
 def addNotes(args):
@@ -49,7 +48,7 @@ def archive(args):
   row = rows[rownum]
   cardType = helpers.getCardType(row)
   helpers.deleteExcept(row,rowGroups,[])
-  row[0][2] = helpers.colourWrap(row[0][2], colours.completedTable[cardType])
+  row[0][2] = helpers.colourWrap("K"+args[0], colours.completedTable[cardType])
 
   lines = helpers.constructFile(rowGroups)
   helpers.writeLines(helpers.outputFileName("bugs.md",args[1]), lines)
@@ -59,7 +58,10 @@ def archive(args):
   archiveLines = helpers.readLines(archiveFile)
   archiveRows = helpers.getRows(archiveLines, template)
   archiveRowGroups = helpers.getRowGroups(archiveRows, archiveLines, fileFlag="archive")
-  archiveRowGroups[0].append(row)
+  if cardType == "blocked":
+    archiveRowGroups[1].append(row)
+  else:
+    archiveRowGroups[0].append(row)
 
   archiveLines = helpers.constructFile(archiveRowGroups,fileFlag="archive")
   helpers.writeLines(helpers.outputFileName(archiveFile,args[1]), archiveLines)
@@ -67,7 +69,7 @@ def archive(args):
   indexLines = helpers.readLines("archive.md")
   line = helpers.searchLines(args[0], indexLines)
   indexLines[line] = indexLines[line].replace(colours.inProgressTable[cardType],colours.completedTable[cardType])
-  helpers.writeLines(helpers.outputFileName("archive.md",args[1]), indexLines)
+# helpers.writeLines(helpers.outputFileName("archive.md",args[1]), indexLines)
 
   notesFile = "cards/"+args[0]+".md"
   if os.path.exists(notesFile):
@@ -131,7 +133,7 @@ def test(args):
   print(helpers.getCardType([["","","","","","","","","","<span style=\"color:#ffab0f\">"],0,0]))
 
 if __name__ == "__main__":
-  import sys, helpers5 as helpers
+  import sys, helpers6 as helpers
   helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:

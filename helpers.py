@@ -1,4 +1,4 @@
-## Add a function to determine the card type of a row
+## Add the ability to archive blocked cards
 import re, colours
 
 def archiveLine(cardNum, description, colour):
@@ -35,7 +35,7 @@ def getArchiveFile(card):
   config = readLines("config.md")
   for line in config:
     bounds = line.split(" ")
-    if int(card) > int(bounds[0]) and int(card) < int(bounds[1]):
+    if int(card) >= int(bounds[0]) and int(card) <= int(bounds[1]):
       archiveFile = "archive/" + bounds[0] + "-" + bounds[1] + ".md"
       break
   return archiveFile
@@ -49,6 +49,8 @@ def getCardNum(line):
     return match.group(0)[1:]
 
 def getCardType(row):
+  if colours.inProgressTable["blocked"] in row[0][2]:
+    return "blocked"
   for key in colours.inProgressTable.keys():
     if colours.inProgressTable[key] in row[0][9]:
       return key
