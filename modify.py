@@ -1,4 +1,4 @@
-## Also prepend for the real thing so that doesn't break
+## Add a help string in a different file
 import colours
 
 def addNotes(args):
@@ -104,7 +104,7 @@ def addCard(args):
     del newCard[0][6:57]
     rowGroups[2].append(newCard)
   else:
-    print(helpString," [code,review,investigate]")
+    helpers.printHelp()
     return
 
   colour = colours.inProgressTable[args[2]]
@@ -150,11 +150,10 @@ def test(args):
   helpers.writeToFile("blorg.txt",["string"],"test")
 
 if __name__ == "__main__":
-  import sys, helpers10 as helpers
-  helpString = "Usage: python modify.py [deleteNotes,addNotes,toQa] <cardNum>"
+  import sys, helpers12 as helpers
   cardTypes = ["code","review","investigate"]
   if len(sys.argv) < 3:
-    print(helpString)
+    helpers.printHelp()
   else:
     choice = sys.argv[1]
     args = sys.argv[2:]
@@ -162,7 +161,7 @@ if __name__ == "__main__":
       if choice == "test":
         test(args)
       else:
-        print(helpString)
+        helpers.printHelp()
     else:
       flag = 0
       if len(choice) > 2 and not "t" in choice:
@@ -186,21 +185,15 @@ if __name__ == "__main__":
         import os
         archive(args)
         flag = 1
-      if "p" in choice:
-        if len(args) < 3:
-          print(helpString+" <prNum>")
-        else:
-          addPR(args)
-          flag = 1
-      if "c" in choice:
-        if len(args) < 3:
-          print(helpString+" ["+",".join(cardTypes)+"]")
-        else:
-          addCard(args)
-          flag = 1
+      if "p" in choice and len(args) >= 3:
+        addPR(args)
+        flag = 1
+      if "c" in choice and len(args) >= 3:
+        addCard(args)
+        flag = 1
       if "b" in choice:
         blockCard(args)
         flag = 1
       if not flag:
-        print(helpString)
+        helpers.printHelp()
 

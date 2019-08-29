@@ -1,4 +1,4 @@
-## Add an "Investigations" section and fix getRowGroups bug
+## Add a function to print the help string
 import re, colours
 
 def appendToTestFile(fileName):
@@ -124,6 +124,9 @@ def getTitles(fileFlag):
     return bugTitles
   else:
     return archiveTitles
+
+def printHelp():
+  printLines(readLines("help"))
 
 ## Prints a list of strings to the console
 def printLines(lines):
