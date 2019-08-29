@@ -1,6 +1,5 @@
-## Add a function to get the card number from a line if there is one, and
-## change the sorting key to use this function
-import re
+## Add a function to determine the card type of a row
+import re, colours
 
 def archiveLine(cardNum, description, colour):
   return "- "+colourWrap("K"+cardNum, colour).strip()+" "+description
@@ -36,7 +35,7 @@ def getArchiveFile(card):
   config = readLines("config.md")
   for line in config:
     bounds = line.split(" ")
-    if card > bounds[0] and card < bounds[1]:
+    if int(card) > int(bounds[0]) and int(card) < int(bounds[1]):
       archiveFile = "archive/" + bounds[0] + "-" + bounds[1] + ".md"
       break
   return archiveFile
@@ -48,6 +47,11 @@ def getCardNum(line):
   match = re.search("K[0-9]*", line)
   if match:
     return match.group(0)[1:]
+
+def getCardType(row):
+  for key in colours.inProgressTable.keys():
+    if colours.inProgressTable[key] in row[0][9]:
+      return key
 
 ## Gets a single row in the table based on the card template, starting from
 ## the given start line. Returns the contents as a list of strings, along
