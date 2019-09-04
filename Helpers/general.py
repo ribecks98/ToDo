@@ -2,7 +2,7 @@ import re
 import fileConstruct as construct
 
 def archiveLine(cardNum, description, colour):
-  return "- "+colourWrap("K"+cardNum, colour).strip()+" "+description
+  return "- "+colourWrap("ID"+cardNum, colour).strip()+" "+description
 
 def colourWrap(string, colour):
   return "  <span style=\"color:" + colour + "\">" + string.strip() + "</span>"
@@ -28,4 +28,8 @@ def getArchiveIndex(card, partitionConfig):
     if int(card) >= partitionConfig[i][0] and int(card) <= partitionConfig[i][1]:
       return i
   return -1
+
+def insertLines(lines, toInsert, insertIndex):
+  for count in range(len(toInsert)):
+    lines.insert(insertIndex,toInsert.pop())
 
