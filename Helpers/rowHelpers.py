@@ -14,7 +14,7 @@ def cleanLines(lines,length):
         j = j+1
 
 def constructNewChecklist(template,cardType,cardNum,newColour):
-  checklist = fileio.readLines("Templates/"+cardType+".md")
+  checklist = fileio.readLines("Templates/"+cardType+".md")[2:]
   sar.replaceInLines("<colour>",newColour,checklist)
   line = sar.searchLines("<checklist>",template)
   del template[line]
