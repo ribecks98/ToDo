@@ -1,6 +1,7 @@
 import fileConstruct as construct
 import fileio
 import general
+import helperClasses as classes
 import searchAndReplace as sar
 
 def cleanLines(lines,length):
@@ -64,6 +65,20 @@ def getRows(lines, template):
     rows.append(result)
     start = result[2]
   return rows[:-1]
+
+def getRowsByCard(lines, template, config):
+  cardInfos = {}
+  start = 0
+  while start < len(lines):
+    result = getRow(lines, template, start)
+    if result[2] >= len(lines):
+      break
+    cardNum = fileio.sortKey(result)
+    cardKey = str(cardNum)
+    cardInfos[cardKey] = classes.CardInfo(cardNum,row=result)
+    cardInfos[cardKey].setStatus(config.colour)
+    start = result[2]
+  return cardInfos
 
 ## Gets a list of the cards in QA. Returns empty if there are none
 def selectRows(rows, startLine, endLine):

@@ -8,6 +8,7 @@ class CardInfo:
   row = []
   rowNum = -1
   partition = -1
+  status = ""
 
   def __init__(self, card, line="", row=[], rowNum=-1, partition=-1):
     self.card = card
@@ -15,16 +16,11 @@ class CardInfo:
     self.row = row
     self.partition = partition
 
-  def setStatus(self, colourConfig, progressCards=[]):
-    if progressCards == []:
-      progressLines = fileio.readLines("bugs.md")
-      template = fileio.readLines("cardTemplate.md")
-      rows = rowHelpers.getRows(progressLines, template)
-      for row in rows:
-        progressCards.append(fileio.sortKey(row))
-
-    complete = not self.card in progressCards
-    self.status = State(complete, cardInfo.getCardType(colourConfig, self.line))
+  def setStatus(self, colourConfig):
+    if self.line:
+      self.status = cardInfo.getCardStatus(colourConfig,self.line)
+    else:
+      self.status = cardInfo.getCardStatusFromRow(colourConfig,self.row)
 
 class Config:
   partition = []

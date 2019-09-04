@@ -1,6 +1,6 @@
 ## Add the ability to change the colour scheme using an update config
 
-def addNotes(args):
+def addNotes(args): ## -n 
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
   rows = rowHelpers.getRows(lines, template)
@@ -10,7 +10,7 @@ def addNotes(args):
   fileio.writeToFile("bugs.md",lines,args[0])
   fileio.writeToFile("cards/"+args[1]+".md",["[Back to Cards](../bugs.md)",""],args[0])
 
-def deleteNotes(args):
+def deleteNotes(args): ## -d
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
   startLines = len(lines)
@@ -19,7 +19,7 @@ def deleteNotes(args):
   del lines[sar.searchInRow("template",rows[rownum])]
   fileio.writeToFile("bugs.md",lines,args[0])
 
-def toQa(args):
+def toQa(args): ## -q
   lines = fileio.readLines("bugs.md")
   startLines = len(lines)
   template = fileio.readLines("cardTemplate.md")
@@ -32,11 +32,11 @@ def toQa(args):
   lines = construct.constructFile(rowGroups)
   fileio.writeToFile("bugs.md",lines,args[0])
 
-def archive(args):
+def archive(args): ## -r
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
+  rows = rowHelpers.getRowsByCard(lines, template, config)
   rownum = rowHelpers.getRowNum(rows,args[1])
   rowGroups = rowHelpers.getRowGroups(rows, lines)
   row = rows[rownum]
@@ -76,7 +76,7 @@ def archive(args):
     notesLines[0] = "[Back to Subarchive](../"+archiveFile+")"
     fileio.writeToFile(notesFile,notesLines,args[0])
 
-def addPR(args):
+def addPR(args): ## -p
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
   rows = rowHelpers.getRows(lines, template)
@@ -87,7 +87,7 @@ def addPR(args):
 
   fileio.writeToFile("bugs.md",lines,args[0])
 
-def addCard(args):
+def addCard(args): ## -c
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
@@ -121,7 +121,7 @@ def addCard(args):
   indexLines.insert(lineNum,general.archiveLine(args[1], description, colour))
   fileio.writeToFile("archive.md",indexLines,args[0])
 
-def blockCard(args):
+def blockCard(args): ## -b
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
@@ -141,7 +141,7 @@ def blockCard(args):
   colouring.setColour(args[1],config.colour[0]["blocked"],archiveLines,config.colour)
   fileio.writeToFile("archive.md",archiveLines,args[0])
 
-def updateConfig(args):
+def updateConfig(args): ## -u
   config = load.getUpdateConfig()
   if not config.partition and not config.colour:
     return
@@ -233,7 +233,7 @@ def updateConfig(args):
 
   load.setConfig(config, args[0])
 
-def unblockCard(args):
+def unblockCard(args): ## -z
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")

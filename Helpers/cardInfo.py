@@ -35,19 +35,20 @@ def getCardsInPartition(cardKeys, bounds):
     cards.append(card)
   return cards
 
-def getCardType(colours, archiveLine):
+def getCardStatus(colours, archiveLine):
   for key in colours[0].keys():
     for i in range(len(colours)):
       if colours[i][key] in archiveLine:
-        return key
+        flag = i == 1
+        return helpers.State(status=key,complete=flag)
 
-def getCardTypeFromRow(colours, row):
+def getCardStatusFromRow(colours, row):
   for key in colours[0].keys():
     for i in range(len(colours)):
       if colours[i][key] in row[0][9]:
-        return key
+        flag = i == 1
+        return helpers.State(status=key,complete=flag)
   
-
 def getPartition(cardLines, config, exclude=False):
   count = 0
   partition = [[]]
