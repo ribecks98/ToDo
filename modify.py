@@ -111,7 +111,7 @@ def addCard(args):
 
   colour = config.colour[0][args[2]]
 
-  description = "blorg test"##input("Give a description for the card: ")
+  description = input("Give a description for the card: ")
   sar.replaceInLines("<description>",description,newCard[0])
 
   lines = construct.constructFile(rowGroups)

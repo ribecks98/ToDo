@@ -3,7 +3,7 @@ This is a script to update the to-do list in various ways.
 It is run only with flags and user inputs. The general 
 form is as follows:
 
-  python modify.py [-flags] <card#> [args]
+  python3 modify.py [-flags] <card#> [args]
 
 The available flags are the following:
 
