@@ -1,6 +1,6 @@
-## Move the config to a separate directory
 import helperClasses
-import helpers
+import fileio
+import fileConstruct as construct
 import os
 
 def getConfig():
@@ -20,7 +20,7 @@ def getUpdateConfig():
   return helperClasses.Config(part, colour)
 
 def readPartitionConfig(base):
-  configLines = helpers.readLines(base+"/config_part")
+  configLines = fileio.readLines(base+"/config_part")
   for i in range(len(configLines)):
     configLines[i] = configLines[i].split(" ")
     for j in range(2):
@@ -28,7 +28,7 @@ def readPartitionConfig(base):
   return configLines
 
 def readColourConfig(base):
-  configLines = helpers.readLines(base+"/config_colour")
+  configLines = fileio.readLines(base+"/config_colour")
   configDicts = [{}]
   for line in configLines:
     if line == "":
@@ -49,11 +49,11 @@ def setConfig(updateConfig, flag):
 def writeConfig(config, flag):
   lines = []
   for line in config.partition:
-    lines.append(helpers.addZeroes(line[0])+" "+helpers.addZeroes(line[1]))
-  helpers.writeToFile("config/config_part", lines, flag)
+    lines.append(construct.addZeroes(line[0])+" "+construct.addZeroes(line[1]))
+  fileio.writeToFile("config/config_part", lines, flag)
   lines = []
   for section in config.colour:
     for line in section.keys():
       lines.append(line+" "+section[line])
     lines.append("")
-  helpers.writeToFile("config/config_colour", lines[:-1], flag)
+  fileio.writeToFile("config/config_colour", lines[:-1], flag)
