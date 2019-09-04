@@ -1,4 +1,6 @@
 import fileConstruct as construct
+import fileio
+import general
 import searchAndReplace as sar
 
 def cleanLines(lines,length):
@@ -10,6 +12,15 @@ def cleanLines(lines,length):
           lines[i] = lines[j]
           break
         j = j+1
+
+def constructNewChecklist(template,cardType,cardNum,newColour):
+  checklist = fileio.readLines("Templates/"+cardType+".md")[2:]
+  sar.replaceInLines("<colour>",newColour,checklist)
+  line = sar.searchLines("<checklist>",template)
+  del template[line]
+  general.insertLines(template,checklist,line)
+  sar.replaceInLines("<cardNum>",cardNum,template)
+  return template[5:-1]
 
 ## Gets a single row in the table based on the card template, starting from
 ## the given start line. Returns the contents as a list of strings, along

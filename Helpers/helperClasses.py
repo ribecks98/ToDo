@@ -52,7 +52,7 @@ class Config:
         theMax = max(cardNumbers)
         theMin = min(cardNumbers)
       else:
-        theMin = 1000000
+        theMin = 100000000
         theMax = 0
       if self.partition[0][0] > theMin:
         raise MessageError("The minimum value in the partition is larger than the smallest ID: " \

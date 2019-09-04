@@ -45,7 +45,7 @@ def archive(args):
   lineNum = sar.searchLines(args[1],indexLines)
   cardType = cardHelp.getCardType(config.colour, indexLines[lineNum])
   general.deleteExcept(row,rowGroups,[])
-  row[0][2] = general.colourWrap("K"+args[1], config.colour[1][cardType])
+  row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
   lineNum = sar.searchLines("\"cards/",row[0])
   if "template" in row[0][lineNum]:
     del row[0][lineNum]
@@ -93,23 +93,15 @@ def addCard(args):
   template = fileio.readLines("cardTemplate.md")
   rows = rowHelpers.getRows(lines, template)
   rowGroups = rowHelpers.getRowGroups(rows, lines)
-  newCard = [template[5:-1],0,0]
-  sar.replaceInLines("<cardNum>",args[1],newCard[0])
+  colour = config.colour[0][args[2]]
+  newCard = [rowHelpers.constructNewChecklist(template,args[2],args[1],colour),0,0]
+
   if args[2] == "code":
-    del newCard[0][26:67]
     rowGroups[0].append(newCard)
   elif args[2] == "review":
-    del newCard[0][57:67]
-    del newCard[0][6:26]
     rowGroups[1].append(newCard)
-  elif args[2] == "investigate":
-    del newCard[0][6:57]
-    rowGroups[2].append(newCard)
   else:
-    printing.printHelp()
-    return
-
-  colour = config.colour[0][args[2]]
+    rowGroups[2].append(newCard)
 
   description = input("Give a description for the card: ")
   sar.replaceInLines("<description>",description,newCard[0])
@@ -137,7 +129,7 @@ def blockCard(args):
   rownum = rowHelpers.getRowNum(rows,args[1])
   row = rows[rownum]
   rowGroups = rowHelpers.getRowGroups(rows, lines)
-  row[0][2] = general.colourWrap("K"+args[1], config.colour[0]["blocked"])
+  row[0][2] = general.colourWrap("ID"+args[1], config.colour[0]["blocked"])
 
   general.deleteExcept(row,rowGroups,[])
   rowGroups[-1].append(row)
@@ -256,7 +248,7 @@ def unblockCard(args):
   cardType = cardHelp.getCardTypeFromRow(config.colour, row)
   colouring.updateColour(config.colour[0]["blocked"],config.colour[0][cardType],cardInfo)
   general.deleteExcept(row, rowGroups, [])
-  cardInfo.row[0][2] = "  K"+args[1]
+  cardInfo.row[0][2] = "  ID"+args[1]
   if cardType == "code":
     rowGroups[0].append(cardInfo.row)
   elif cardType == "review":
@@ -271,8 +263,10 @@ def unblockCard(args):
   fileio.writeToFile("archive.md", archiveLines, args[0])
 
 def test(args):
-  config = load.getUpdateConfig()
-  print(config)
+  lines = ["","","","","","",""]
+  new = ["These","are","new","lines"]
+  general.insertLines(lines,new,2)
+  printing.printLines(lines)
 
 if __name__ == "__main__":
   import sys

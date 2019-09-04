@@ -23,7 +23,7 @@ def constructArchiveFromPartition(archiveLines, partition, config):
 def constructArchiveLink(configLine):
   start = addZeroes(configLine[0])
   end = addZeroes(configLine[1])
-  return "##### [K" + start + "-K" + end + \
+  return "##### [ID" + start + "-ID" + end + \
   "](archive/" + start + "-" + end + ".md)"
 
 ## Constructs the MarkDown file based from the row groups

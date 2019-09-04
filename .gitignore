@@ -3,14 +3,16 @@ archive/*
 cards/*
 config/*
 update/*
+archiveOld/*
+Templates/*
 *Test*
 bugs.md
 colours.py
 archive.md
 cardTemplate.md
+cardTemplates.md
 progress.*
 upPro.sh
-dailyToDo.md
 script.sh
 *.pyc
 testOut.md

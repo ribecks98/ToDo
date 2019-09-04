@@ -1,6 +1,14 @@
 import helperClasses as helpers
 import re
 
+def filterCards(cardInfos, cards):
+  count = 0
+  while count < len(cards):
+    if not cardInfos[card].status.complete:
+      del cards[count]
+    else:
+      count = count + 1
+
 def getCardInfos(archiveLines):
   cardInfos = {}
   for line in archiveLines:
@@ -12,10 +20,20 @@ def getCardInfos(archiveLines):
 def getCardNum(line):
   match = re.search(">.*<", line)
   if match:
-    return match.group(0)[2:-1]
-  match = re.search("K[0-9]*", line)
+    return match.group(0)[3:-1]
+  match = re.search("ID[0-9]*", line)
   if match:
-    return match.group(0)[1:]
+    return match.group(0)[2:]
+
+def getCardsInPartition(cardKeys, bounds):
+  cards = []
+  for card in cardKeys:
+    if int(card) < bounds[0]:
+      continue
+    elif int(card) > bounds[1]:
+      return cards
+    cards.append(card)
+  return cards
 
 def getCardType(colours, archiveLine):
   for key in colours[0].keys():
@@ -33,13 +51,13 @@ def getCardTypeFromRow(colours, row):
 def getPartition(cardLines, config, exclude=False):
   count = 0
   partition = [[]]
-  for card in sorted(cardLines.keys()):
-    if not cardLines[card].status.complete and exclude:
-      continue
-    if card > config[count][1]:
-      partition.append([])
-      count = count + 1
-    partition[-1].append(cardLines[card].line)
-    cardLines[card].partition = count
+  cardKeys = sorted([cardLines[card].cardNum for card in cardLines.keys()])
+  for bounds in config:
+    cards = getCardsInPartition(cardKeys, bounds)
+    if exclude:
+      filterCards(cardLines,cards)
+    partition.append([cardLines[card].line for card in cards])
+    for card in cards:
+      cardLines[card].partition = count
   return partition
 
