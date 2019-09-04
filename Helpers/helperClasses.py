@@ -48,11 +48,15 @@ class Config:
           raise MessageError("Boundaries "+str(i)+" and "+str(i+1)+" are not one apart: "+ \
             str(self.partition[i][1])+", "+str(self.partition[i+1][0]))
       cardNumbers = cardInfo.getCardInfos(fileio.readLines("archive.md")).keys()
-      theMin = min(cardNumbers)
+      if cardNumbers:
+        theMax = max(cardNumbers)
+        theMin = min(cardNumbers)
+      else:
+        theMin = 1000000
+        theMax = 0
       if self.partition[0][0] > theMin:
         raise MessageError("The minimum value in the partition is larger than the smallest ID: " \
           +str(self.partition[0][0])+", "+str(theMin))
-      theMax = max(cardNumbers)
       if self.partition[-1][1] < theMax:
         raise MessageError("The maximum value in the partition is smaller than the largest ID: " \
           +str(self.partition[-1][1])+", "+str(theMax))
