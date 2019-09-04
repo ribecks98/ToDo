@@ -1,5 +1,6 @@
 ## Add a state and a setStatus method for CardInfo
-import helpers
+import fileio
+import cardInfo
 
 class CardInfo:
   card = -1
@@ -16,14 +17,14 @@ class CardInfo:
 
   def setStatus(self, colourConfig, progressCards=[]):
     if progressCards == []:
-      progressLines = helpers.readLines("bugs.md")
-      template = helpers.readLines("cardTemplate.md")
-      rows = helpers.getRows(progressLines, template)
+      progressLines = fileio.readLines("bugs.md")
+      template = fileio.readLines("cardTemplate.md")
+      rows = rowHelpers.getRows(progressLines, template)
       for row in rows:
-        progressCards.append(helpers.sortKey(row))
+        progressCards.append(fileio.sortKey(row))
 
     complete = not self.card in progressCards
-    self.status = State(complete, helpers.getCardType(colourConfig, self.line))
+    self.status = State(complete, cardInfo.getCardType(colourConfig, self.line))
 
 class Config:
   partition = []
@@ -46,7 +47,7 @@ class Config:
         if self.partition[i+1][0] != self.partition[i][1] + 1:
           raise MessageError("Boundaries "+str(i)+" and "+str(i+1)+" are not one apart: "+ \
             str(self.partition[i][1])+", "+str(self.partition[i+1][0]))
-      cardNumbers = helpers.getCardInfos(helpers.readLines("archive.md")).keys()
+      cardNumbers = cardInfo.getCardInfos(fileio.readLines("archive.md")).keys()
       theMin = min(cardNumbers)
       if self.partition[0][0] > theMin:
         raise MessageError("The minimum value in the partition is larger than the smallest ID: " \
