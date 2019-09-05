@@ -50,7 +50,6 @@ def archive(args): ## -r
   else:
     cardInfos[args[1]].row[0][lineNum] = cardInfos[args[1]].row[0][lineNum].replace("\"cards","\"../cards")
 
-  print(filter1(cardInfos))
   lines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
       filter1(cardInfos),config \
@@ -69,6 +68,7 @@ def archive(args): ## -r
       part = i
       break
 
+  print(filter2(cardInfos,config.partition[part]))
   archiveLines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
       filter2(cardInfos,config.partition[part]),config \
