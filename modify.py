@@ -36,7 +36,7 @@ def archive(args): ## -r
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  cardInfos = rowHelpers.getRowsByCard(lines, template, config)
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
 
   indexLines = fileio.readLines("archive.md")
   lineNum = sar.searchLines(args[1],indexLines)
@@ -50,23 +50,32 @@ def archive(args): ## -r
   else:
     cardInfos[args[1]].row[0][lineNum] = cardInfos[args[1]].row[0][lineNum].replace("\"cards","\"../cards")
 
-  print(myFilter(cardInfos))
+  print(filter1(cardInfos))
   lines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
-      myFilter(cardInfos),config), \
-    config)
+      filter1(cardInfos),config \
+    ), \
+    config \
+  )
   fileio.writeToFile("bugs.md",lines,args[0])
 
   archiveFile = general.getArchiveFile(args[1], config.partition)
   archiveLines = fileio.readLines(archiveFile)
-  archiveRows = rowHelpers.getRows(archiveLines, template)
-  archiveRowGroups = rowHelpers.getRowGroups(archiveRows, archiveLines, fileFlag="archive")
-  if cardType == "blocked":
-    archiveRowGroups[1].append(row)
-  else:
-    archiveRowGroups[0].append(row)
+  archiveRows = rowHelpers.getRowsByCard(archiveLines, template, config, cardInfos)
 
-  archiveLines = construct.constructFile(archiveRowGroups,fileFlag="archive")
+  part = -1
+  for i in range(len(config.partition)):
+    if int(args[1]) >= config.partition[i][0] and int(args[1]) <= config.partition[i][1]:
+      part = i
+      break
+
+  archiveLines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      filter2(cardInfos,config.partition[part]),config \
+    ), \
+    config, \
+    fileFlag="archive" \
+  )
   fileio.writeToFile(archiveFile,archiveLines,args[0])
 
   colouring.replaceColour(args[1],config.colour[0][cardType],config.colour[1][cardType],indexLines)
@@ -266,12 +275,20 @@ def unblockCard(args): ## -z
 
 def test(args):
   nums = [1,2,3,4,5,656,76,7,8,899,8,7,6]
-  filtered = filter(myFilter,nums)
+  filtered = filter(filter1,nums)
 
-def myFilter(cardInfos):
+def filter1(cardInfos):
   newCards = {}
   for card in cardInfos.keys():
     if not cardInfos[card].status.complete:
+      newCards[card] = cardInfos[card]
+  return newCards
+
+def filter2(cardInfos,config):
+  newCards = {}
+  for card in cardInfos.keys():
+    info = cardInfos[card]
+    if info.status.complete and info.card >= config[0] and info.card < config[1]:
       newCards[card] = cardInfos[card]
   return newCards
 

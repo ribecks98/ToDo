@@ -90,16 +90,19 @@ def getRows(lines, template):
     start = result[2]
   return rows[:-1]
 
-def getRowsByCard(lines, template, config):
-  cardInfos = {}
+def getRowsByCard(lines, template, config, cardInfos):
   start = 0
+  keys = cardInfos.keys()
   while start < len(lines):
     result = getRow(lines, template, start)
     if result[2] >= len(lines):
       break
     cardNum = fileio.sortKey(result)
     cardKey = str(cardNum)
-    cardInfos[cardKey] = classes.CardInfo(cardNum,row=result)
+    if cardKey in keys:
+      cardInfos[cardKey].row = result
+    else:
+      cardInfos[cardKey] = classes.CardInfo(cardNum,row=result)
     cardInfos[cardKey].setStatus(config.colour)
     start = result[2]
   return cardInfos
