@@ -49,8 +49,9 @@ def readTemplateConfig(base):
     titleMap[line[0]] = line[1]
     count = count + 1
   theList.append("blocked")
-  titleMap["blocked"] = configLines[-1]
-  return helperClasses.Template(theList,titleMap)
+  titleMap["blocked"] = configLines[-4]
+  archiveMap = { "done": configLines[-2], "blocked": configLines[-1] }
+  return helperClasses.Template(theList,titleMap,archiveMap)
 
 def setConfig(updateConfig, flag):
   config = getConfig()

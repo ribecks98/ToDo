@@ -105,13 +105,27 @@ class Config:
 class Template:
   theList = []
   titleMap = {}
+  archiveMap = {}
 
-  def __init__(self, theList, titleMap):
+  def __init__(self, theList, titleMap, archiveMap):
     self.theList = theList
     self.titleMap = titleMap
+    self.archiveMap = archiveMap
+
+  def getList(self,complete):
+    if complete:
+      return ["done", "blocked"]
+    else:
+      return self.theList
+
+  def getTitles(self,complete):
+    if complete:
+      return self.archiveMap
+    else:
+      return self.titleMap
 
   def __str__(self):
-    return self.theList.__str__() + "\n" + self.titleMap.__str__()
+    return self.theList.__str__() + "\n" + self.titleMap.__str__() + "\n" + self.archiveMap.__str__()
 
 class Error(Exception):
   pass

@@ -36,23 +36,25 @@ def archive(args): ## -r
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRowsByCard(lines, template, config)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
-  row = rows[rownum]
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config)
 
   indexLines = fileio.readLines("archive.md")
   lineNum = sar.searchLines(args[1],indexLines)
-  cardType = cardHelp.getCardType(config.colour, indexLines[lineNum])
-  general.deleteExcept(row,rowGroups,[])
-  row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
-  lineNum = sar.searchLines("\"cards/",row[0])
-  if "template" in row[0][lineNum]:
-    del row[0][lineNum]
+  print(cardInfos[args[1]])
+  cardInfos[args[1]].status.complete = True ## We've completed the thing
+  cardType = cardInfos[args[1]].status.status
+  cardInfos[args[1]].row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
+  lineNum = sar.searchLines("\"cards/",cardInfos[args[1]].row[0])
+  if "template" in cardInfos[args[1]].row[0][lineNum]:
+    del cardInfos[args[1]].row[0][lineNum]
   else:
-    row[0][lineNum] = row[0][lineNum].replace("\"cards","\"../cards")
+    cardInfos[args[1]].row[0][lineNum] = cardInfos[args[1]].row[0][lineNum].replace("\"cards","\"../cards")
 
-  lines = construct.constructFile(rowGroups)
+  print(myFilter(cardInfos))
+  lines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      myFilter(cardInfos),config), \
+    config)
   fileio.writeToFile("bugs.md",lines,args[0])
 
   archiveFile = general.getArchiveFile(args[1], config.partition)
@@ -263,10 +265,15 @@ def unblockCard(args): ## -z
   fileio.writeToFile("archive.md", archiveLines, args[0])
 
 def test(args):
-  lines = ["","","","","","",""]
-  new = ["These","are","new","lines"]
-  general.insertLines(lines,new,2)
-  printing.printLines(lines)
+  nums = [1,2,3,4,5,656,76,7,8,899,8,7,6]
+  filtered = filter(myFilter,nums)
+
+def myFilter(cardInfos):
+  newCards = {}
+  for card in cardInfos.keys():
+    if not cardInfos[card].status.complete:
+      newCards[card] = cardInfos[card]
+  return newCards
 
 if __name__ == "__main__":
   import sys

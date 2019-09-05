@@ -49,6 +49,30 @@ def getRowGroups(rows,lines,fileFlag="bugs"):
     rowGroups.append(selectRows(rows,lineNums[i],lineNums[i+1]))
   return rowGroups
 
+def getRowGroupsByCard(cardInfos,config):
+  if not cardInfos:
+    return []
+  for card in cardInfos.keys():
+    if cardInfos[card].status.complete:
+      return getRowGroupsComplete(cardInfos)
+    else:
+      return getRowGroupsIncomplete(cardInfos,config)
+
+def getRowGroupsComplete(cardInfos):
+  toReturn = { "done": {}, "blocked": {}}
+  for card in cardInfos.keys():
+    toReturn[lump(cardInfos[card].status.status)][card] = cardInfos[card]
+  return toReturn
+      
+def getRowGroupsIncomplete(cardInfos,config):
+  print(config.templates)
+  toReturn = {}
+  for template in config.templates.theList:
+    toReturn[template] = {}
+  for card in cardInfos.keys():
+    toReturn[cardInfos[card].status.status][card] = cardInfos[card]
+  return toReturn
+      
 ## Given a list of rows, finds the index of the row corresponding to the
 ## input card
 def getRowNum(rows, cardNum):
@@ -79,6 +103,12 @@ def getRowsByCard(lines, template, config):
     cardInfos[cardKey].setStatus(config.colour)
     start = result[2]
   return cardInfos
+
+def lump(status):
+  if status == "blocked":
+    return "blocked"
+  else: 
+    return "done"
 
 ## Gets a list of the cards in QA. Returns empty if there are none
 def selectRows(rows, startLine, endLine):
