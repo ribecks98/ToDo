@@ -39,7 +39,7 @@ def archive(args): ## -r
   cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
 
   indexLines = fileio.readLines("archive.md")
-  lineNum = sar.searchLines(args[1],indexLines)
+  lineNum = sar.searchLines(args[1]+"<",indexLines)
   print(cardInfos[args[1]])
   cardInfos[args[1]].status.complete = True ## We've completed the thing
   cardType = cardInfos[args[1]].status.status

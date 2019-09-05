@@ -4,7 +4,7 @@ def replaceColour3(line,colour1,colour2):
   return line.replace("color:"+colour1,"color:"+colour2)
 
 def replaceColour(card,colour1,colour2,lines):
-  line = sar.searchLines(card, lines)
+  line = sar.searchLines(card+"<", lines)
   lines[line] = replaceColour3(lines[line],colour1,colour2)
 
 def setColour(card,colour,lines,colours):
