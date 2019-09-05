@@ -16,6 +16,12 @@ class CardInfo:
     self.row = row
     self.partition = partition
 
+  def __str__(self):
+    string = "ID: "+ str(self.card) + "\n" \
+    + "Line: " + self.line + "\n" \
+    + "Status: " + self.status.__str__() + "\n"
+    return string
+
   def setStatus(self, colourConfig):
     if self.line:
       self.status = cardInfo.getCardStatus(colourConfig,self.line)
