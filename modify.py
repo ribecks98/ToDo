@@ -42,7 +42,7 @@ def archive(args):
   row = rows[rownum]
 
   indexLines = fileio.readLines("archive.md")
-  lineNum = sar.searchLines(args[1],indexLines)
+  lineNum = sar.searchLines(args[1]+"<",indexLines)
   cardType = cardHelp.getCardType(config.colour, indexLines[lineNum])
   general.deleteExcept(row,rowGroups,[])
   row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
