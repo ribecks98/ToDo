@@ -5,7 +5,7 @@ import os
 
 def getConfig():
   base = "config"
-  return helperClasses.Config(readPartitionConfig(base), readColourConfig(base))
+  return helperClasses.Config(readPartitionConfig(base), readColourConfig(base), readTemplateConfig(base))
 
 def getUpdateConfig():
   base = "update"
@@ -37,6 +37,20 @@ def readColourConfig(base):
     parts = line.split(" ")
     configDicts[-1][parts[0]] = parts[1]
   return configDicts
+
+def readTemplateConfig(base):
+  configLines = fileio.readLines(base+"/config_templates")
+  theList = []
+  titleMap = {}
+  count = 0
+  while configLines[count]:
+    line = configLines[count].split(" ")
+    theList.append(line[0])
+    titleMap[line[0]] = line[1]
+    count = count + 1
+  theList.append("blocked")
+  titleMap["blocked"] = configLines[-1]
+  return helperClasses.Template(theList,titleMap)
 
 def setConfig(updateConfig, flag):
   config = getConfig()

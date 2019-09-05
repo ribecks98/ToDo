@@ -28,13 +28,31 @@ class CardInfo:
     else:
       self.status = cardInfo.getCardStatusFromRow(colourConfig,self.row)
 
+class State:
+  complete = False
+  status = "code"
+
+  def __init__(self, complete, status):
+    if complete:
+      self.complete = 1
+    else: 
+      self.complete = 0
+    self.status = status
+
+  def __str__(self):
+    if self.complete:
+      return "complete "+self.status
+    return "incomplete "+self.status
+
 class Config:
   partition = []
   colour = []
+  templates = {}
 
-  def __init__(self, partition=[], colour=[]):
+  def __init__(self, partition=[], colour=[], templates={}):
     self.partition = partition
     self.colour = colour
+    self.templates = templates
     self.validate()
 
   def validate(self):
@@ -84,21 +102,16 @@ class Config:
     print(self.colour)
     return ""
 
-class State:
-  complete = False
-  status = "code"
+class Template:
+  theList = []
+  titleMap = {}
 
-  def __init__(self, complete, status):
-    if complete:
-      self.complete = 1
-    else: 
-      self.complete = 0
-    self.status = status
+  def __init__(self, theList, titleMap):
+    self.theList = theList
+    self.titleMap = titleMap
 
   def __str__(self):
-    if self.complete:
-      return "complete "+self.status
-    return "incomplete "+self.status
+    return self.theList.__str__() + "\n" + self.titleMap.__str__()
 
 class Error(Exception):
   pass
