@@ -85,7 +85,7 @@ class Config:
       raise
 
   def validateColour(self):
-    cardTypes = sorted(["code","review","investigate","blocked"])
+    cardTypes = sorted(self.templates.theList)
     try:
       for table in self.colour:
         if not sorted(table.keys()) == cardTypes:

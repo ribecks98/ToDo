@@ -65,7 +65,6 @@ def getRowGroupsComplete(cardInfos):
   return toReturn
       
 def getRowGroupsIncomplete(cardInfos,config):
-  print(config.templates)
   toReturn = {}
   for template in config.templates.theList:
     toReturn[template] = {}

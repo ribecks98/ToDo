@@ -45,6 +45,7 @@ def readTemplateConfig(base):
   count = 0
   while configLines[count]:
     line = configLines[count].split(" ")
+    line[1] = " ".join(line[1:])
     theList.append(line[0])
     titleMap[line[0]] = line[1]
     count = count + 1
