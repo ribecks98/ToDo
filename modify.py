@@ -16,19 +16,6 @@ def deleteNotes(args): ## -d
   del lines[sar.searchInRow("cards/"+args[1],cardInfos[args[1]].row)]
   fileio.writeToFile("bugs.md",lines,args[0])
 
-def toQa(args): ## -q
-  lines = fileio.readLines("bugs.md")
-  startLines = len(lines)
-  template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
-  rowGroups[-2].append(rows[rownum])
-  general.deleteExcept(rows[rownum],rowGroups,[-2])
-
-  lines = construct.constructFile(rowGroups)
-  fileio.writeToFile("bugs.md",lines,args[0])
-
 def archive(args): ## -r
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
