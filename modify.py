@@ -233,18 +233,6 @@ def unblockCard(args): ## -z
   if not cardInfos[args[1]].status.blocked or cardInfos[args[1]].status.complete:
     return
 
-##  lines = construct.constructFileByCard( \
-##    rowHelpers.getRowGroupsByCard( \
-##      filter1(cardInfos), config
-##    ), \
-##    config \
-##  )
-##  fileio.writeToFile("bugs.md",lines,args[0])
-
-##  archiveLines = fileio.readLines("archive.md")
-##  colouring.setColour(args[1],config.colour[0]["blocked"],archiveLines,config.colour)
-##  fileio.writeToFile("archive.md",archiveLines,args[0])
-
   cardInfos[args[1]].row[0][2] = "  ID"+args[1]
   cardInfos[args[1]].status.blocked = False
   archiveLines = fileio.readLines("archive.md")
