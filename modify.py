@@ -41,7 +41,8 @@ def archive(args): ## -r
   indexLines = fileio.readLines("archive.md")
   lineNum = sar.searchLines(args[1]+"<",indexLines)
   cardInfos[args[1]].status.complete = True ## We've completed the thing
-  cardType = cardInfos[args[1]].status.status
+  cardType = cardInfos[args[1]].status.convertToStatus()
+  print(cardType)
   cardInfos[args[1]].row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
   lineNum = sar.searchLines("\"cards/",cardInfos[args[1]].row[0])
   if "template" in cardInfos[args[1]].row[0][lineNum]:
@@ -104,7 +105,7 @@ def addCard(args): ## -c
   colour = config.colour[0][args[2]]
   newCard = [rowHelpers.constructNewChecklist(template,args[2],args[1],colour),0,0]
   cardInfos[args[1]] = classes.CardInfo(int(args[1]),row=newCard)
-  cardInfos[args[1]].status = classes.State(False,args[2])
+  cardInfos[args[1]].status = classes.State(False,args[2],False)
 
   description = input("Give a description for the card: ")
   sar.replaceInLines("<description>",description,cardInfos[args[1]].row[0])
@@ -135,7 +136,7 @@ def blockCard(args): ## -b
   template = fileio.readLines("cardTemplate.md")
   cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
   cardInfos[args[1]].row[0][2] = general.colourWrap("ID"+args[1], config.colour[0]["blocked"])
-  cardInfos[args[1]].status.status = "blocked"
+  cardInfos[args[1]].status.blocked = True
 
   lines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \

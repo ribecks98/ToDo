@@ -61,7 +61,7 @@ def getRowGroupsByCard(cardInfos,config):
 def getRowGroupsComplete(cardInfos):
   toReturn = { "done": {}, "blocked": {}}
   for card in cardInfos.keys():
-    toReturn[lump(cardInfos[card].status.status)][card] = cardInfos[card]
+    toReturn[lump(cardInfos[card].status)][card] = cardInfos[card]
   return toReturn
       
 def getRowGroupsIncomplete(cardInfos,config):
@@ -69,7 +69,7 @@ def getRowGroupsIncomplete(cardInfos,config):
   for template in config.templates.theList:
     toReturn[template] = {}
   for card in cardInfos.keys():
-    toReturn[cardInfos[card].status.status][card] = cardInfos[card]
+    toReturn[cardInfos[card].status.convertToStatus()][card] = cardInfos[card]
   return toReturn
       
 ## Given a list of rows, finds the index of the row corresponding to the
@@ -107,7 +107,7 @@ def getRowsByCard(lines, template, config, cardInfos):
   return cardInfos
 
 def lump(status):
-  if status == "blocked":
+  if status.blocked:
     return "blocked"
   else: 
     return "done"

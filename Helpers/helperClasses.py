@@ -23,21 +23,29 @@ class CardInfo:
     return string
 
   def setStatus(self, colourConfig):
-    if self.line:
-      self.status = cardInfo.getCardStatus(colourConfig,self.line)
-    else:
+    if self.row:
       self.status = cardInfo.getCardStatusFromRow(colourConfig,self.row)
+    else:
+      self.status = cardInfo.getCardStatus(colourConfig,self.line)
 
 class State:
   complete = False
   status = "code"
+  blocked = False
 
-  def __init__(self, complete, status):
+  def __init__(self, complete, status, blocked):
     if complete:
       self.complete = 1
     else: 
       self.complete = 0
     self.status = status
+    self.blocked = blocked
+
+  def convertToStatus(self):
+    if self.blocked:
+      return "blocked"
+    else:
+      return self.status
 
   def __str__(self):
     if self.complete:

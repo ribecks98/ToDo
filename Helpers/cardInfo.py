@@ -40,17 +40,19 @@ def getCardStatus(colours, archiveLine):
     for i in range(len(colours)):
       if colours[i][key] in archiveLine:
         flag = i == 1
-        return helpers.State(status=key,complete=flag)
+        flag2 = key == "blocked"
+        return helpers.State(status=key,complete=flag,blocked=flag2)
 
 def getCardStatusFromRow(colours, row):
+  flag2 = False
   for key in colours[0].keys():
     for i in range(len(colours)-1,-1,-1):
       if colours[i][key] in row[0][2]:
-        flag = i == 1
-        return helpers.State(status=key,complete=flag)
+        flag2 = True
       if colours[i][key] in row[0][9]:
         flag = i == 1
-        return helpers.State(status=key,complete=flag)
+        status = key
+  return helpers.State(status=status,complete=flag,blocked=flag2)
   
 def getPartition(cardLines, config, exclude=False):
   count = 0
