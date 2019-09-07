@@ -9,12 +9,11 @@ def addNotes(args): ## -n
   fileio.writeToFile("cards/"+args[1]+".md",["[Back to Cards](../bugs.md)",""],args[0])
 
 def deleteNotes(args): ## -d
+  config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  startLines = len(lines)
-  rows = rowHelpers.getRows(lines,template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  del lines[sar.searchInRow("template",rows[rownum])]
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  del lines[sar.searchInRow("cards/"+args[1],cardInfos[args[1]].row)]
   fileio.writeToFile("bugs.md",lines,args[0])
 
 def toQa(args): ## -q
