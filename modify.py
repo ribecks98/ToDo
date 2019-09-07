@@ -1,9 +1,9 @@
 def addNotes(args): ## -n 
+  config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  lineNum = sar.searchInRow("cards/template.md",rows[rownum])
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  lineNum = sar.searchInRow("cards/template.md",cardInfos[args[1]].row)
   lines[lineNum] = lines[lineNum].replace("template",args[1])
   fileio.writeToFile("bugs.md",lines,args[0])
   fileio.writeToFile("cards/"+args[1]+".md",["[Back to Cards](../bugs.md)",""],args[0])
