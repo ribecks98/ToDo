@@ -71,12 +71,11 @@ def archive(args): ## -r
     fileio.writeToFile(notesFile,notesLines,args[0])
 
 def addPR(args): ## -p
+  config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  row = rows[rownum]
-  lineNum = sar.searchInRow("pull/",row)
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  lineNum = sar.searchInRow("pull/",cardInfos[args[1]].row)
   lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[2])
 
   fileio.writeToFile("bugs.md",lines,args[0])
