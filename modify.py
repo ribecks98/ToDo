@@ -1,5 +1,3 @@
-## Add the ability to change the colour scheme using an update config
-
 def addNotes(args): ## -n 
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
@@ -246,29 +244,39 @@ def unblockCard(args): ## -z
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  row = rows[rownum]
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  if not cardInfos[args[1]].status.blocked or cardInfos[args[1]].status.complete:
+    return
 
+##  lines = construct.constructFileByCard( \
+##    rowHelpers.getRowGroupsByCard( \
+##      filter1(cardInfos), config
+##    ), \
+##    config \
+##  )
+##  fileio.writeToFile("bugs.md",lines,args[0])
+
+##  archiveLines = fileio.readLines("archive.md")
+##  colouring.setColour(args[1],config.colour[0]["blocked"],archiveLines,config.colour)
+##  fileio.writeToFile("archive.md",archiveLines,args[0])
+
+  cardInfos[args[1]].row[0][2] = "  ID"+args[1]
+  cardInfos[args[1]].status.blocked = False
   archiveLines = fileio.readLines("archive.md")
   lineNum = sar.searchLines(args[1], archiveLines)
-  cardInfo = helperClasses.CardInfo(int(args[1]), line=archiveLines[lineNum], row=row)
-  cardType = cardHelp.getCardTypeFromRow(config.colour, row)
-  colouring.updateColour(config.colour[0]["blocked"],config.colour[0][cardType],cardInfo)
-  general.deleteExcept(row, rowGroups, [])
-  cardInfo.row[0][2] = "  ID"+args[1]
-  if cardType == "code":
-    rowGroups[0].append(cardInfo.row)
-  elif cardType == "review":
-    rowGroups[1].append(cardInfo.row)
-  elif cardType == "investigate":
-    rowGroups[2].append(cardInfo.row)
+  cardInfos[args[1]].line = archiveLines[lineNum]
+  cardType = cardInfos[args[1]].status.status
+  colouring.updateColour(config.colour[0]["blocked"],config.colour[0][cardType],cardInfos[args[1]])
 
-  lines = construct.constructFile(rowGroups)
+  lines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      filter1(cardInfos), config \
+    ), \
+    config \
+  )
   fileio.writeToFile("bugs.md", lines, args[0])
 
-  archiveLines[lineNum] = cardInfo.line
+  archiveLines[lineNum] = cardInfos[args[1]].line
   fileio.writeToFile("archive.md", archiveLines, args[0])
 
 def test(args):
