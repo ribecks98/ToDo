@@ -106,7 +106,10 @@ def addCard(args): ## -c
   for i in range(len(indexLines)):
     match = cardHelp.getCardNum(indexLines[i])
     if match and int(match) > int(args[1]):
-      lineNum = i
+      if "#####" in indexLines[i]:
+        lineNum = i-1
+      else:
+        lineNum = i
       break
   if lineNum < 0:
     lineNum = len(indexLines)
