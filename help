@@ -29,10 +29,12 @@ The available flags are the following:
   -p <card#> <pr#>
     Changes the PR link to a valid one (assuming you 
     haven't already done this) by adding the PR number to 
-    the link.
+    the link. This only does something if there's a GitHub
+    PR link in the card.
 
   -q <card#>
-    Moves a card to QA.
+    Moves a card to QA. **This is currently obsolete, but 
+    may be readded later.**
 
   -r <card#>
     Archives a card by removing it from the "In Progress" 
@@ -58,5 +60,8 @@ The available flags are the following:
     before they are overwritten to avoid the loss of data. 
     If you want you can delete that directory after the 
     script is run.
+
+  -z <card#>
+    Unblocks card <card#>.
 
 At the moment, flags cannot be combined (except for the testing flag).
