@@ -5,7 +5,7 @@ import os
 
 def getConfig():
   base = "config"
-  return helperClasses.Config(readPartitionConfig(base), readColourConfig(base))
+  return helperClasses.Config(readPartitionConfig(base), readColourConfig(base), readTemplateConfig(base))
 
 def getUpdateConfig():
   base = "update"
@@ -17,7 +17,11 @@ def getUpdateConfig():
     colour = readColourConfig(base)
   else: 
     colour = None
-  return helperClasses.Config(part, colour)
+  if os.path.exists(base+"/config_templates"):
+    templates = readTemplateConfig(base)
+  else:
+    templates = readTemplateConfig("config")
+  return helperClasses.Config(part, colour, templates)
 
 def readPartitionConfig(base):
   configLines = fileio.readLines(base+"/config_part")
@@ -37,6 +41,22 @@ def readColourConfig(base):
     parts = line.split(" ")
     configDicts[-1][parts[0]] = parts[1]
   return configDicts
+
+def readTemplateConfig(base):
+  configLines = fileio.readLines(base+"/config_templates")
+  theList = []
+  titleMap = {}
+  count = 0
+  while configLines[count]:
+    line = configLines[count].split(" ")
+    line[1] = " ".join(line[1:])
+    theList.append(line[0])
+    titleMap[line[0]] = line[1]
+    count = count + 1
+  theList.append("blocked")
+  titleMap["blocked"] = configLines[-4]
+  archiveMap = { "done": configLines[-2], "blocked": configLines[-1] }
+  return helperClasses.Template(theList,titleMap,archiveMap)
 
 def setConfig(updateConfig, flag):
   config = getConfig()

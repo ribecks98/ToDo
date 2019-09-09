@@ -1,6 +1,7 @@
 import fileConstruct as construct
 import fileio
 import general
+import helperClasses as classes
 import searchAndReplace as sar
 
 def cleanLines(lines,length):
@@ -48,13 +49,29 @@ def getRowGroups(rows,lines,fileFlag="bugs"):
     rowGroups.append(selectRows(rows,lineNums[i],lineNums[i+1]))
   return rowGroups
 
-## Given a list of rows, finds the index of the row corresponding to the
-## input card
-def getRowNum(rows, cardNum):
-  for i in range(len(rows)):
-    if cardNum in rows[i][0][2]:
-      return i
+def getRowGroupsByCard(cardInfos,config):
+  if not cardInfos:
+    return []
+  for card in cardInfos.keys():
+    if cardInfos[card].status.complete:
+      return getRowGroupsComplete(cardInfos)
+    else:
+      return getRowGroupsIncomplete(cardInfos,config)
 
+def getRowGroupsComplete(cardInfos):
+  toReturn = { "done": {}, "blocked": {}}
+  for card in cardInfos.keys():
+    toReturn[lump(cardInfos[card].status)][card] = cardInfos[card]
+  return toReturn
+      
+def getRowGroupsIncomplete(cardInfos,config):
+  toReturn = {}
+  for template in config.templates.theList:
+    toReturn[template] = {}
+  for card in cardInfos.keys():
+    toReturn[cardInfos[card].status.convertToStatus()][card] = cardInfos[card]
+  return toReturn
+      
 ## Splits the lines into the rows of the HTML table based on the row template
 def getRows(lines, template):
   rows = []
@@ -64,6 +81,29 @@ def getRows(lines, template):
     rows.append(result)
     start = result[2]
   return rows[:-1]
+
+def getRowsByCard(lines, template, config, cardInfos):
+  start = 0
+  keys = cardInfos.keys()
+  while start < len(lines):
+    result = getRow(lines, template, start)
+    if result[2] >= len(lines):
+      break
+    cardNum = fileio.sortKey(result)
+    cardKey = str(cardNum)
+    if cardKey in keys:
+      cardInfos[cardKey].row = result
+    else:
+      cardInfos[cardKey] = classes.CardInfo(cardNum,row=result)
+    cardInfos[cardKey].setStatus(config.colour)
+    start = result[2]
+  return cardInfos
+
+def lump(status):
+  if status.blocked:
+    return "blocked"
+  else: 
+    return "done"
 
 ## Gets a list of the cards in QA. Returns empty if there are none
 def selectRows(rows, startLine, endLine):

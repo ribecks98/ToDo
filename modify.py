@@ -1,70 +1,64 @@
-## Add the ability to change the colour scheme using an update config
-
-def addNotes(args):
+def addNotes(args): ## -n 
+  config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  lineNum = sar.searchInRow("cards/template.md",rows[rownum])
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  lineNum = sar.searchInRow("cards/template.md",cardInfos[args[1]].row)
   lines[lineNum] = lines[lineNum].replace("template",args[1])
   fileio.writeToFile("bugs.md",lines,args[0])
   fileio.writeToFile("cards/"+args[1]+".md",["[Back to Cards](../bugs.md)",""],args[0])
 
-def deleteNotes(args):
-  lines = fileio.readLines("bugs.md")
-  template = fileio.readLines("cardTemplate.md")
-  startLines = len(lines)
-  rows = rowHelpers.getRows(lines,template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  del lines[sar.searchInRow("template",rows[rownum])]
-  fileio.writeToFile("bugs.md",lines,args[0])
-
-def toQa(args):
-  lines = fileio.readLines("bugs.md")
-  startLines = len(lines)
-  template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
-  rowGroups[-2].append(rows[rownum])
-  general.deleteExcept(rows[rownum],rowGroups,[-2])
-
-  lines = construct.constructFile(rowGroups)
-  fileio.writeToFile("bugs.md",lines,args[0])
-
-def archive(args):
+def deleteNotes(args): ## -d
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
-  row = rows[rownum]
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  del lines[sar.searchInRow("cards/"+args[1],cardInfos[args[1]].row)]
+  fileio.writeToFile("bugs.md",lines,args[0])
+
+def archive(args): ## -r
+  config = load.getConfig()
+  lines = fileio.readLines("bugs.md")
+  template = fileio.readLines("cardTemplate.md")
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
 
   indexLines = fileio.readLines("archive.md")
   lineNum = sar.searchLines(args[1]+"<",indexLines)
-  cardType = cardHelp.getCardType(config.colour, indexLines[lineNum])
-  general.deleteExcept(row,rowGroups,[])
-  row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
-  lineNum = sar.searchLines("\"cards/",row[0])
-  if "template" in row[0][lineNum]:
-    del row[0][lineNum]
+  cardInfos[args[1]].status.complete = True ## We've completed the thing
+  cardType = cardInfos[args[1]].status.convertToStatus()
+  print(cardType)
+  cardInfos[args[1]].row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
+  lineNum = sar.searchLines("\"cards/",cardInfos[args[1]].row[0])
+  if "template" in cardInfos[args[1]].row[0][lineNum]:
+    del cardInfos[args[1]].row[0][lineNum]
   else:
-    row[0][lineNum] = row[0][lineNum].replace("\"cards","\"../cards")
+    cardInfos[args[1]].row[0][lineNum] = cardInfos[args[1]].row[0][lineNum].replace("\"cards","\"../cards")
 
-  lines = construct.constructFile(rowGroups)
+  lines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      filter1(cardInfos),config \
+    ), \
+    config \
+  )
   fileio.writeToFile("bugs.md",lines,args[0])
 
   archiveFile = general.getArchiveFile(args[1], config.partition)
   archiveLines = fileio.readLines(archiveFile)
-  archiveRows = rowHelpers.getRows(archiveLines, template)
-  archiveRowGroups = rowHelpers.getRowGroups(archiveRows, archiveLines, fileFlag="archive")
-  if cardType == "blocked":
-    archiveRowGroups[1].append(row)
-  else:
-    archiveRowGroups[0].append(row)
+  archiveRows = rowHelpers.getRowsByCard(archiveLines, template, config, cardInfos)
 
-  archiveLines = construct.constructFile(archiveRowGroups,fileFlag="archive")
+  part = -1
+  for i in range(len(config.partition)):
+    if int(args[1]) >= config.partition[i][0] and int(args[1]) <= config.partition[i][1]:
+      part = i
+      break
+
+  archiveLines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      filter2(cardInfos,config.partition[part]),config \
+    ), \
+    config, \
+    fileFlag="archive" \
+  )
   fileio.writeToFile(archiveFile,archiveLines,args[0])
 
   colouring.replaceColour(args[1],config.colour[0][cardType],config.colour[1][cardType],indexLines)
@@ -76,37 +70,35 @@ def archive(args):
     notesLines[0] = "[Back to Subarchive](../"+archiveFile+")"
     fileio.writeToFile(notesFile,notesLines,args[0])
 
-def addPR(args):
+def addPR(args): ## -p
+  config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  row = rows[rownum]
-  lineNum = sar.searchInRow("pull/",row)
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  lineNum = sar.searchInRow("pull/",cardInfos[args[1]].row)
   lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[2])
 
   fileio.writeToFile("bugs.md",lines,args[0])
 
-def addCard(args):
+def addCard(args): ## -c
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
   colour = config.colour[0][args[2]]
   newCard = [rowHelpers.constructNewChecklist(template,args[2],args[1],colour),0,0]
-
-  if args[2] == "code":
-    rowGroups[0].append(newCard)
-  elif args[2] == "review":
-    rowGroups[1].append(newCard)
-  else:
-    rowGroups[2].append(newCard)
+  cardInfos[args[1]] = classes.CardInfo(int(args[1]),row=newCard)
+  cardInfos[args[1]].status = classes.State(False,args[2],False)
 
   description = input("Give a description for the card: ")
-  sar.replaceInLines("<description>",description,newCard[0])
+  sar.replaceInLines("<description>",description,cardInfos[args[1]].row[0])
 
-  lines = construct.constructFile(rowGroups)
+  lines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      filter1(cardInfos),config \
+    ), \
+    config \
+  )
   fileio.writeToFile("bugs.md",lines,args[0])
 
   indexLines = fileio.readLines("archive.md")
@@ -114,34 +106,37 @@ def addCard(args):
   for i in range(len(indexLines)):
     match = cardHelp.getCardNum(indexLines[i])
     if match and int(match) > int(args[1]):
-      lineNum = i
+      if "#####" in indexLines[i]:
+        lineNum = i-1
+      else:
+        lineNum = i
       break
   if lineNum < 0:
     lineNum = len(indexLines)
   indexLines.insert(lineNum,general.archiveLine(args[1], description, colour))
   fileio.writeToFile("archive.md",indexLines,args[0])
 
-def blockCard(args):
+def blockCard(args): ## -b
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  row = rows[rownum]
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
-  row[0][2] = general.colourWrap("ID"+args[1], config.colour[0]["blocked"])
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  cardInfos[args[1]].row[0][2] = general.colourWrap("ID"+args[1], config.colour[0]["blocked"])
+  cardInfos[args[1]].status.blocked = True
 
-  general.deleteExcept(row,rowGroups,[])
-  rowGroups[-1].append(row)
-
-  lines = construct.constructFile(rowGroups)
+  lines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      filter1(cardInfos), config
+    ), \
+    config \
+  )
   fileio.writeToFile("bugs.md",lines,args[0])
 
   archiveLines = fileio.readLines("archive.md")
   colouring.setColour(args[1],config.colour[0]["blocked"],archiveLines,config.colour)
   fileio.writeToFile("archive.md",archiveLines,args[0])
 
-def updateConfig(args):
+def updateConfig(args): ## -u
   config = load.getUpdateConfig()
   if not config.partition and not config.colour:
     return
@@ -185,7 +180,6 @@ def updateConfig(args):
     newArchiveRowGroups = [[[],[]] for f in files]
 
     for card in cardInfos.keys():
-##    print(card,cardInfos[card].partition)
       colouring.updateColourByConfig(oldConfig.colour, config.colour, cardInfos[card])
       if cardInfos[card].partition >= 0:
         newArchiveRowGroups[cardInfos[card].partition][cardInfos[card].rowGroup].append(cardInfos[card].row)
@@ -233,40 +227,51 @@ def updateConfig(args):
 
   load.setConfig(config, args[0])
 
-def unblockCard(args):
+def unblockCard(args): ## -z
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
-  rows = rowHelpers.getRows(lines, template)
-  rownum = rowHelpers.getRowNum(rows,args[1])
-  row = rows[rownum]
-  rowGroups = rowHelpers.getRowGroups(rows, lines)
+  cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
+  if not cardInfos[args[1]].status.blocked or cardInfos[args[1]].status.complete:
+    return
 
+  cardInfos[args[1]].row[0][2] = "  ID"+args[1]
+  cardInfos[args[1]].status.blocked = False
   archiveLines = fileio.readLines("archive.md")
   lineNum = sar.searchLines(args[1], archiveLines)
-  cardInfo = helperClasses.CardInfo(int(args[1]), line=archiveLines[lineNum], row=row)
-  cardType = cardHelp.getCardTypeFromRow(config.colour, row)
-  colouring.updateColour(config.colour[0]["blocked"],config.colour[0][cardType],cardInfo)
-  general.deleteExcept(row, rowGroups, [])
-  cardInfo.row[0][2] = "  ID"+args[1]
-  if cardType == "code":
-    rowGroups[0].append(cardInfo.row)
-  elif cardType == "review":
-    rowGroups[1].append(cardInfo.row)
-  elif cardType == "investigate":
-    rowGroups[2].append(cardInfo.row)
+  cardInfos[args[1]].line = archiveLines[lineNum]
+  cardType = cardInfos[args[1]].status.status
+  colouring.updateColour(config.colour[0]["blocked"],config.colour[0][cardType],cardInfos[args[1]])
 
-  lines = construct.constructFile(rowGroups)
+  lines = construct.constructFileByCard( \
+    rowHelpers.getRowGroupsByCard( \
+      filter1(cardInfos), config \
+    ), \
+    config \
+  )
   fileio.writeToFile("bugs.md", lines, args[0])
 
-  archiveLines[lineNum] = cardInfo.line
+  archiveLines[lineNum] = cardInfos[args[1]].line
   fileio.writeToFile("archive.md", archiveLines, args[0])
 
 def test(args):
-  lines = ["","","","","","",""]
-  new = ["These","are","new","lines"]
-  general.insertLines(lines,new,2)
-  printing.printLines(lines)
+  nums = [1,2,3,4,5,656,76,7,8,899,8,7,6]
+  filtered = filter(filter1,nums)
+
+def filter1(cardInfos):
+  newCards = {}
+  for card in cardInfos.keys():
+    if not cardInfos[card].status.complete:
+      newCards[card] = cardInfos[card]
+  return newCards
+
+def filter2(cardInfos,config):
+  newCards = {}
+  for card in cardInfos.keys():
+    info = cardInfos[card]
+    if info.status.complete and info.card >= config[0] and info.card < config[1]:
+      newCards[card] = cardInfos[card]
+  return newCards
 
 if __name__ == "__main__":
   import sys
@@ -276,6 +281,7 @@ if __name__ == "__main__":
   import fileConstruct as construct
   import fileio
   import general
+  import helperClasses as classes
   import printing
   import rowHelpers
   import searchAndReplace as sar

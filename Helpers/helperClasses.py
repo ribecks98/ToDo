@@ -8,6 +8,7 @@ class CardInfo:
   row = []
   rowNum = -1
   partition = -1
+  status = ""
 
   def __init__(self, card, line="", row=[], rowNum=-1, partition=-1):
     self.card = card
@@ -15,24 +16,51 @@ class CardInfo:
     self.row = row
     self.partition = partition
 
-  def setStatus(self, colourConfig, progressCards=[]):
-    if progressCards == []:
-      progressLines = fileio.readLines("bugs.md")
-      template = fileio.readLines("cardTemplate.md")
-      rows = rowHelpers.getRows(progressLines, template)
-      for row in rows:
-        progressCards.append(fileio.sortKey(row))
+  def __str__(self):
+    string = "ID: "+ str(self.card) + "\n" \
+    + "Line: " + self.line + "\n" \
+    + "Status: " + self.status.__str__() + "\n"
+    return string
 
-    complete = not self.card in progressCards
-    self.status = State(complete, cardInfo.getCardType(colourConfig, self.line))
+  def setStatus(self, colourConfig):
+    if self.row:
+      self.status = cardInfo.getCardStatusFromRow(colourConfig,self.row)
+    else:
+      self.status = cardInfo.getCardStatus(colourConfig,self.line)
+
+class State:
+  complete = False
+  status = "code"
+  blocked = False
+
+  def __init__(self, complete, status, blocked):
+    if complete:
+      self.complete = 1
+    else: 
+      self.complete = 0
+    self.status = status
+    self.blocked = blocked
+
+  def convertToStatus(self):
+    if self.blocked:
+      return "blocked"
+    else:
+      return self.status
+
+  def __str__(self):
+    if self.complete:
+      return "complete "+self.status
+    return "incomplete "+self.status
 
 class Config:
   partition = []
   colour = []
+  templates = {}
 
-  def __init__(self, partition=[], colour=[]):
+  def __init__(self, partition=[], colour=[], templates={}):
     self.partition = partition
     self.colour = colour
+    self.templates = templates
     self.validate()
 
   def validate(self):
@@ -65,7 +93,9 @@ class Config:
       raise
 
   def validateColour(self):
-    cardTypes = sorted(["code","review","investigate","blocked"])
+    if not self.colour:
+      return
+    cardTypes = sorted(self.templates.theList)
     try:
       for table in self.colour:
         if not sorted(table.keys()) == cardTypes:
@@ -82,21 +112,30 @@ class Config:
     print(self.colour)
     return ""
 
-class State:
-  complete = False
-  status = "code"
+class Template:
+  theList = []
+  titleMap = {}
+  archiveMap = {}
 
-  def __init__(self, complete, status):
+  def __init__(self, theList, titleMap, archiveMap):
+    self.theList = theList
+    self.titleMap = titleMap
+    self.archiveMap = archiveMap
+
+  def getList(self,complete):
     if complete:
-      self.complete = 1
-    else: 
-      self.complete = 0
-    self.status = status
+      return ["done", "blocked"]
+    else:
+      return self.theList
+
+  def getTitles(self,complete):
+    if complete:
+      return self.archiveMap
+    else:
+      return self.titleMap
 
   def __str__(self):
-    if self.complete:
-      return "complete "+self.status
-    return "incomplete "+self.status
+    return self.theList.__str__() + "\n" + self.titleMap.__str__() + "\n" + self.archiveMap.__str__()
 
 class Error(Exception):
   pass

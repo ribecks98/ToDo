@@ -35,6 +35,15 @@ def constructFile(rowGroups, fileFlag="bugs"):
       lines.extend(constructTable(rowGroups[i],titles[i]))
   return lines
 
+def constructFileByCard(cardGroups, config, fileFlag="bugs"):
+  lines = getStartLines(fileFlag)
+  titles = config.templates.getTitles(fileFlag != "bugs")
+  templateList = config.templates.getList(fileFlag != "bugs")
+  for template in templateList:
+    if cardGroups[template]:
+      lines.extend(constructTable([cardGroups[template][card].row for card in cardGroups[template].keys()],titles[template]))
+  return lines
+
 def constructFileName(configLine):
   return addZeroes(configLine[0]) + "-" + addZeroes(configLine[1]) + ".md"
 
