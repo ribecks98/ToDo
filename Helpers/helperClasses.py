@@ -93,6 +93,8 @@ class Config:
       raise
 
   def validateColour(self):
+    if not self.colour:
+      return
     cardTypes = sorted(self.templates.theList)
     try:
       for table in self.colour:

@@ -57,7 +57,7 @@ def getCardStatusFromRow(colours, row):
 def getPartition(cardLines, config, exclude=False):
   count = 0
   partition = [[]]
-  cardKeys = sorted([cardLines[card].cardNum for card in cardLines.keys()])
+  cardKeys = sorted([cardLines[card].card for card in cardLines.keys()])
   for bounds in config:
     cards = getCardsInPartition(cardKeys, bounds)
     if exclude:

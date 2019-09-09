@@ -180,7 +180,6 @@ def updateConfig(args): ## -u
     newArchiveRowGroups = [[[],[]] for f in files]
 
     for card in cardInfos.keys():
-##    print(card,cardInfos[card].partition)
       colouring.updateColourByConfig(oldConfig.colour, config.colour, cardInfos[card])
       if cardInfos[card].partition >= 0:
         newArchiveRowGroups[cardInfos[card].partition][cardInfos[card].rowGroup].append(cardInfos[card].row)

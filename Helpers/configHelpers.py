@@ -17,7 +17,11 @@ def getUpdateConfig():
     colour = readColourConfig(base)
   else: 
     colour = None
-  return helperClasses.Config(part, colour)
+  if os.path.exists(base+"/config_templates"):
+    templates = readTemplateConfig(base)
+  else:
+    templates = readTemplateConfig("config")
+  return helperClasses.Config(part, colour, templates)
 
 def readPartitionConfig(base):
   configLines = fileio.readLines(base+"/config_part")
