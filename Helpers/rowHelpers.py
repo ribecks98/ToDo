@@ -72,13 +72,6 @@ def getRowGroupsIncomplete(cardInfos,config):
     toReturn[cardInfos[card].status.convertToStatus()][card] = cardInfos[card]
   return toReturn
       
-## Given a list of rows, finds the index of the row corresponding to the
-## input card
-def getRowNum(rows, cardNum):
-  for i in range(len(rows)):
-    if cardNum in rows[i][0][2]:
-      return i
-
 ## Splits the lines into the rows of the HTML table based on the row template
 def getRows(lines, template):
   rows = []
