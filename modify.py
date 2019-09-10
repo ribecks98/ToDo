@@ -26,7 +26,6 @@ def archive(args): ## -r
   lineNum = sar.searchLines(args[1]+"<",indexLines)
   cardInfos[args[1]].status.complete = True ## We've completed the thing
   cardType = cardInfos[args[1]].status.convertToStatus()
-  print(cardType)
   cardInfos[args[1]].row[0][2] = general.colourWrap("ID"+args[1], config.colour[1][cardType])
   lineNum = sar.searchLines("\"cards/",cardInfos[args[1]].row[0])
   if "template" in cardInfos[args[1]].row[0][lineNum]:

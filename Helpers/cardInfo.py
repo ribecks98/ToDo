@@ -44,13 +44,14 @@ def getCardStatus(colours, archiveLine):
         return helpers.State(status=key,complete=flag,blocked=flag2)
 
 def getCardStatusFromRow(colours, row):
+  flag = False
   flag2 = False
   for key in colours[0].keys():
     for i in range(len(colours)-1,-1,-1):
       if colours[i][key] in row[0][2]:
-        flag2 = True
-      if colours[i][key] in row[0][9]:
         flag = i == 1
+        flag2 = key == "blocked"
+      if colours[i][key] in row[0][9]:
         status = key
   return helpers.State(status=status,complete=flag,blocked=flag2)
   
