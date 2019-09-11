@@ -1,3 +1,5 @@
+import os
+
 def addNotes(args): ## -n 
   config = load.getConfig()
   lines = fileio.readLines("bugs.md")
@@ -272,6 +274,66 @@ def filter2(cardInfos,config):
       newCards[card] = cardInfos[card]
   return newCards
 
+def isValid(args, minVal):
+  return len(args) >= minVal
+
+def chooseScript(choice, args):
+  if choice[0] != "-":
+    if choice == "test":
+      test(args)
+    else:
+      printing.printHelp()
+  else:
+    flag = 0
+    if len(choice) > 2 and not "t" in choice:
+      print("Can't have multiple choices")
+      choice = "-"
+    if "t" in choice:
+      args.insert(0,"test")
+      fileio.writeLines("testOut.md",["[Back to Archive](archive.md)","","## Test result files",""])
+    else:
+      args.insert(0,"real")
+    if "q" in choice: 
+      cont = input("This function is not being actively maintained. Continue? [y/n]")
+      if cont == "y" and isValid(args,2):
+        toQa(args)
+        flag = 1
+    if "n" in choice:
+      if isValid(args,2):
+        addNotes(args)
+        flag = 1
+    if "d" in choice:
+      if isValid(args,2):
+        deleteNotes(args)
+        flag = 1
+    if "r" in choice:
+      if isValid(args,2):
+        archive(args)
+        flag = 1
+    if "p" in choice:
+      if isValid(args,3):
+        addPR(args)
+        flag = 1
+    if "c" in choice and len(args) >= 3:
+      if isValid(args,3):
+        addCard(args)
+        flag = 1
+    if "b" in choice:
+      if isValid(args,2):
+        blockCard(args)
+        flag = 1
+    if "u" in choice:
+      if isValid(args,1):
+        import os
+        updateConfig(args)
+        flag = 1
+    if "z" in choice:
+      if isValid(args,2):
+        unblockCard(args)
+        flag = 1
+    if not flag:
+      printing.printHelp()
+
 if __name__ == "__main__":
   import sys
   sys.path.append("Helpers")
@@ -286,56 +348,15 @@ if __name__ == "__main__":
   import searchAndReplace as sar
   import configHelpers as load
   import helperClasses
-  cardTypes = ["code","review","investigate"]
-  if len(sys.argv) < 3:
-    printing.printHelp()
-  else:
+  n = len(sys.argv)
+  if n >= 2:
     choice = sys.argv[1]
+  else:
+    printing.printHelp()
+  if n >= 3:
     args = sys.argv[2:]
-    if choice[0] != "-":
-      if choice == "test":
-        test(args)
-      else:
-        printing.printHelp()
-    else:
-      flag = 0
-      if len(choice) > 2 and not "t" in choice:
-        print("Can't have multiple choices")
-        choice = "-"
-      if "t" in choice:
-        args.insert(0,"test")
-        fileio.writeLines("testOut.md",["[Back to Archive](archive.md)","","## Test result files",""])
-      else:
-        args.insert(0,"real")
-      if "q" in choice: 
-        toQa(args)
-        flag = 1
-      if "n" in choice:
-        addNotes(args)
-        flag = 1
-      if "d" in choice:
-        deleteNotes(args)
-        flag = 1
-      if "r" in choice:
-        import os
-        archive(args)
-        flag = 1
-      if "p" in choice and len(args) >= 3:
-        addPR(args)
-        flag = 1
-      if "c" in choice and len(args) >= 3:
-        addCard(args)
-        flag = 1
-      if "b" in choice:
-        blockCard(args)
-        flag = 1
-      if "u" in choice:
-        import os
-        updateConfig(args)
-        flag = 1
-      if "z" in choice:
-        unblockCard(args)
-        flag = 1
-      if not flag:
-        printing.printHelp()
+  else:
+    args = []
+  if choice:
+    chooseScript(choice, args)
 
