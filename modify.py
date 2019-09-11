@@ -257,6 +257,18 @@ def unblockCard(args): ## -z
 
 def cleanTests(args):
   fileio.writeLines("testOut.md",["[Back to Archive](archive.md)"])
+  files = filter(lambda x: "Test" in x,os.listdir())
+  for f in files:
+    print(f)
+    if os.path.isfile(f):
+      print("file")
+      os.remove(f)
+    else:
+      print("dir")
+      sub = os.listdir(f)
+      for g in sub:
+        os.remove(f+"/"+g)
+      os.rmdir(f)
 
 def test(args):
   nums = [1,2,3,4,5,656,76,7,8,899,8,7,6]
@@ -330,7 +342,7 @@ def chooseScript(choice, args):
         import os
         updateConfig(args)
         flag = 1
-    if "v" is choice:
+    if "v" in choice:
       if isValid(args,1):
         cleanTests(args)
         flag = 1
