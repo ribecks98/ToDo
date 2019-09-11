@@ -255,6 +255,9 @@ def unblockCard(args): ## -z
   archiveLines[lineNum] = cardInfos[args[1]].line
   fileio.writeToFile("archive.md", archiveLines, args[0])
 
+def cleanTests(args):
+  fileio.writeLines("testOut.md",["[Back to Archive](archive.md)"])
+
 def test(args):
   nums = [1,2,3,4,5,656,76,7,8,899,8,7,6]
   filtered = filter(filter1,nums)
@@ -326,6 +329,10 @@ def chooseScript(choice, args):
       if isValid(args,1):
         import os
         updateConfig(args)
+        flag = 1
+    if "v" is choice:
+      if isValid(args,1):
+        cleanTests(args)
         flag = 1
     if "z" in choice:
       if isValid(args,2):
