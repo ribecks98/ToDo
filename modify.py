@@ -293,6 +293,7 @@ def isValid(args, minVal):
   return len(args) >= minVal
 
 def chooseScript(choice, args):
+  import os
   if choice[0] != "-":
     if choice == "test":
       test(args)
@@ -306,6 +307,12 @@ def chooseScript(choice, args):
     if "t" in choice:
       args.insert(0,"test")
       fileio.writeLines("testOut.md",["[Back to Archive](archive.md)","","## Test result files",""])
+      cleanTests(args)
+      files = os.listdir()
+      toexclude = [".git","Templates","Helpers","update"]
+      for f in files:
+        if os.path.isdir(f) and not f in toexclude:
+          os.mkdir(f+"Test")
     else:
       args.insert(0,"real")
     if "q" in choice: 
@@ -355,6 +362,7 @@ def chooseScript(choice, args):
 
 if __name__ == "__main__":
   import sys
+  import os
   sys.path.append("Helpers")
   import cardInfo as cardHelp
   import colouring
