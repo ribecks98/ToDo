@@ -61,6 +61,10 @@ The available flags are the following:
     If you want you can delete that directory after the 
     script is run.
 
+  -v 
+    Used to clean all the test directories, along with 
+    bugsTest.md and archiveTest.md.
+
   -z <card#>
     Unblocks card <card#>.
 

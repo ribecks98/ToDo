@@ -255,6 +255,21 @@ def unblockCard(args): ## -z
   archiveLines[lineNum] = cardInfos[args[1]].line
   fileio.writeToFile("archive.md", archiveLines, args[0])
 
+def cleanTests(args):
+  fileio.writeLines("testOut.md",["[Back to Archive](archive.md)"])
+  files = filter(lambda x: "Test" in x,os.listdir())
+  for f in files:
+    print(f)
+    if os.path.isfile(f):
+      print("file")
+      os.remove(f)
+    else:
+      print("dir")
+      sub = os.listdir(f)
+      for g in sub:
+        os.remove(f+"/"+g)
+      os.rmdir(f)
+
 def test(args):
   nums = [1,2,3,4,5,656,76,7,8,899,8,7,6]
   filtered = filter(filter1,nums)
@@ -278,6 +293,7 @@ def isValid(args, minVal):
   return len(args) >= minVal
 
 def chooseScript(choice, args):
+  import os
   if choice[0] != "-":
     if choice == "test":
       test(args)
@@ -291,6 +307,12 @@ def chooseScript(choice, args):
     if "t" in choice:
       args.insert(0,"test")
       fileio.writeLines("testOut.md",["[Back to Archive](archive.md)","","## Test result files",""])
+      cleanTests(args)
+      files = os.listdir()
+      toexclude = [".git","Templates","Helpers","update"]
+      for f in files:
+        if os.path.isdir(f) and not f in toexclude:
+          os.mkdir(f+"Test")
     else:
       args.insert(0,"real")
     if "q" in choice: 
@@ -327,6 +349,10 @@ def chooseScript(choice, args):
         import os
         updateConfig(args)
         flag = 1
+    if "v" in choice:
+      if isValid(args,1):
+        cleanTests(args)
+        flag = 1
     if "z" in choice:
       if isValid(args,2):
         unblockCard(args)
@@ -336,6 +362,7 @@ def chooseScript(choice, args):
 
 if __name__ == "__main__":
   import sys
+  import os
   sys.path.append("Helpers")
   import cardInfo as cardHelp
   import colouring
