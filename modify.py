@@ -37,7 +37,7 @@ def archive(args): ## -r
 
   lines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
-      filter1(cardInfos),config \
+      filters.filter1(cardInfos),config \
     ), \
     config \
   )
@@ -55,7 +55,7 @@ def archive(args): ## -r
 
   archiveLines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
-      filter2(cardInfos,config.partition[part]),config \
+      filters.filter2(cardInfos,config.partition[part]),config \
     ), \
     config, \
     fileFlag="archive" \
@@ -96,7 +96,7 @@ def addCard(args): ## -c
 
   lines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
-      filter1(cardInfos),config \
+      filters.filter1(cardInfos),config \
     ), \
     config \
   )
@@ -127,7 +127,7 @@ def blockCard(args): ## -b
 
   lines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
-      filter1(cardInfos), config
+      filters.filter1(cardInfos), config
     ), \
     config \
   )
@@ -246,7 +246,7 @@ def unblockCard(args): ## -z
 
   lines = construct.constructFileByCard( \
     rowHelpers.getRowGroupsByCard( \
-      filter1(cardInfos), config \
+      filters.filter1(cardInfos), config \
     ), \
     config \
   )
@@ -272,22 +272,6 @@ def cleanTests(args):
 
 def test(args):
   nums = [1,2,3,4,5,656,76,7,8,899,8,7,6]
-  filtered = filter(filter1,nums)
-
-def filter1(cardInfos):
-  newCards = {}
-  for card in cardInfos.keys():
-    if not cardInfos[card].status.complete:
-      newCards[card] = cardInfos[card]
-  return newCards
-
-def filter2(cardInfos,config):
-  newCards = {}
-  for card in cardInfos.keys():
-    info = cardInfos[card]
-    if info.status.complete and info.card >= config[0] and info.card < config[1]:
-      newCards[card] = cardInfos[card]
-  return newCards
 
 def isValid(args, minVal):
   return len(args) >= minVal
@@ -375,6 +359,7 @@ if __name__ == "__main__":
   import searchAndReplace as sar
   import configHelpers as load
   import helperClasses
+  import filters
   n = len(sys.argv)
   if n >= 2:
     choice = sys.argv[1]
