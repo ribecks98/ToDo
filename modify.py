@@ -259,12 +259,9 @@ def cleanTests(args):
   fileio.writeLines("testOut.md",["[Back to Archive](archive.md)"])
   files = filter(lambda x: "Test" in x,os.listdir())
   for f in files:
-    print(f)
     if os.path.isfile(f):
-      print("file")
       os.remove(f)
     else:
-      print("dir")
       sub = os.listdir(f)
       for g in sub:
         os.remove(f+"/"+g)
