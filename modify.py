@@ -87,7 +87,7 @@ def addCard(args): ## -c
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
   cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
-  cardType = userInput.readThingInList(config.templates.theList)
+  cardType = userInput.readThingInList(filters.filterBlocked(config.templates.theList))
   colour = config.colour[0][cardType]
   newCard = [rowHelpers.constructNewChecklist(template,cardType,args[1],colour),0,0]
   cardInfos[args[1]] = classes.CardInfo(int(args[1]),row=newCard)

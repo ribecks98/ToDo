@@ -1,12 +1,15 @@
-import sys
+import sys, printing
 
 def readThingInList(aList):
     print("Please enter a value from the following list:")
-    print(aList)
+    printing.printLines(aList)
+    print("")
     thing = sys.stdin.readline()[:-1]
     while not thing in aList:
+        print("")
         print("Not an option. Your options are: ")
-        print(aList)
+        printing.printLines(aList)
+        print("")
         thing = sys.stdin.readline()[:-1]
     return thing
 
