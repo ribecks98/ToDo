@@ -77,7 +77,8 @@ def addPR(args): ## -p
   template = fileio.readLines("cardTemplate.md")
   cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
   lineNum = sar.searchInRow("pull/",cardInfos[args[1]].row)
-  lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[2])
+  prNum = input("What is the PR number? ")
+  lines[lineNum] = lines[lineNum].replace("pull/","pull/"+prNum)
 
   fileio.writeToFile("bugs.md",lines,args[0])
 
@@ -315,7 +316,7 @@ def chooseScript(choice, args):
         archive(args)
         flag = 1
     if "p" in choice:
-      if isValid(args,3):
+      if isValid(args,2):
         addPR(args)
         flag = 1
     if "c" in choice:
