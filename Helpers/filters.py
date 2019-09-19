@@ -13,3 +13,9 @@ def filter2(cardInfos,config):
       newCards[card] = cardInfos[card]
   return newCards
 
+def filterBlocked(types):
+  newTypes = []
+  for t in types:
+    if t != "blocked":
+      newTypes.append(t)
+  return newTypes
