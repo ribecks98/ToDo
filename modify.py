@@ -77,7 +77,8 @@ def addPR(args): ## -p
   template = fileio.readLines("cardTemplate.md")
   cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
   lineNum = sar.searchInRow("pull/",cardInfos[args[1]].row)
-  lines[lineNum] = lines[lineNum].replace("pull/","pull/"+args[2])
+  prNum = input("What is the PR number? ")
+  lines[lineNum] = lines[lineNum].replace("pull/","pull/"+prNum)
 
   fileio.writeToFile("bugs.md",lines,args[0])
 
@@ -86,10 +87,11 @@ def addCard(args): ## -c
   lines = fileio.readLines("bugs.md")
   template = fileio.readLines("cardTemplate.md")
   cardInfos = rowHelpers.getRowsByCard(lines, template, config, {})
-  colour = config.colour[0][args[2]]
-  newCard = [rowHelpers.constructNewChecklist(template,args[2],args[1],colour),0,0]
+  cardType = userInput.readThingInList(filters.filterBlocked(config.templates.theList))
+  colour = config.colour[0][cardType]
+  newCard = [rowHelpers.constructNewChecklist(template,cardType,args[1],colour),0,0]
   cardInfos[args[1]] = classes.CardInfo(int(args[1]),row=newCard)
-  cardInfos[args[1]].status = classes.State(False,args[2],False)
+  cardInfos[args[1]].status = classes.State(False,cardType,False)
 
   description = input("Give a description for the card: ")
   sar.replaceInLines("<description>",description,cardInfos[args[1]].row[0])
@@ -314,11 +316,11 @@ def chooseScript(choice, args):
         archive(args)
         flag = 1
     if "p" in choice:
-      if isValid(args,3):
+      if isValid(args,2):
         addPR(args)
         flag = 1
-    if "c" in choice and len(args) >= 3:
-      if isValid(args,3):
+    if "c" in choice:
+      if isValid(args,2):
         addCard(args)
         flag = 1
     if "b" in choice:
@@ -357,6 +359,7 @@ if __name__ == "__main__":
   import configHelpers as load
   import helperClasses
   import filters
+  import userInput
   n = len(sys.argv)
   if n >= 2:
     choice = sys.argv[1]
