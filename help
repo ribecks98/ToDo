@@ -10,11 +10,12 @@ The available flags are the following:
   -b <card#>
     Blocks card <card#>.
 
-  -c <card#> <type>
-    Creates a card with the number <card#> of type <type>. 
-    Also sets up the link to Kanbanize, a template notes 
-    card that tells you to make a real one, and an invalid 
-    PR link.
+  -c <card#> 
+    Creates a card with the number <card#> of type <type>, 
+    where the type is determined in the script with a user
+    input. Also sets up the link to Kanbanize, a template 
+    notes card that tells you to make a real one, and an 
+    invalid PR link.
 
   -d <card#>
     Deletes the link to the notes for card <card#> if the 
@@ -26,11 +27,12 @@ The available flags are the following:
     Adds a file for the notes for a card, and links to it 
     on the entry for that card on the "In Progess" page.
 
-  -p <card#> <pr#>
+  -p <card#> 
     Changes the PR link to a valid one (assuming you 
     haven't already done this) by adding the PR number to 
-    the link. This only does something if there's a GitHub
-    PR link in the card.
+    the link. The PR number is asked for as a user input
+    during the script. This only does something if there's 
+    a GitHub PR link in the card.
 
   -q <card#>
     Moves a card to QA. **This is currently obsolete, but 
